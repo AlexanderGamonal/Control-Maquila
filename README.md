@@ -16,7 +16,7 @@ Aplicación Web Progresiva (PWA) moderna, responsiva y offline-first diseñada p
   3. **Sistema:** Ingreso formal a producción.
   - Se marcan con un solo toque y calculan automáticamente el estado del pedido.
 - **Alertas Inteligentes de Entrega:** Cálculo de días restantes (`¡Hoy!`, `Mañana`, `Faltan X d`, `Atrasado X d`).
-- **Selector de Tema:** Modo Oscuro (Obsidian & Ember) y Modo Claro (Artisan Cream) con contraste WCAG AAA.
+- **Selector de Tema:** Modo Oscuro (Obsidian & Ember) y Modo Claro (Artisan Cream). Todo el texto cumple contraste WCAG AA (≥ 4.5:1), verificado con un escaneo automático de los textos renderizados en ambos temas.
 - **PWA Instalable:** Funciona sin conexión a internet gracias a Service Worker y persistencia en `localStorage`.
 - **Sincronización con Google Sheets:** Comunicación vía Web App (`Code.gs`) protegida por token secreto, con resolución de conflictos por timestamp.
 
@@ -40,13 +40,15 @@ Aplicación Web Progresiva (PWA) moderna, responsiva y offline-first diseñada p
 1. Abre una nueva hoja de cálculo en [Google Sheets](https://sheets.new).
 2. Ve a **Extensiones ➔ Apps Script**.
 3. Pega el código de [`Code.gs`](./Code.gs).
-4. Configura tu token de seguridad en la constante `CONFIG.TOKEN`.
+4. Ejecuta **una vez** la función `generarToken` (▶ Ejecutar) y autoriza los permisos. Copia el token que aparece en el **Registro de ejecución**: queda guardado en *Propiedades del script*, no en el código.
 5. Haz clic en **Implementar ➔ Nueva implementación**:
    - Tipo: **Aplicación web**.
    - Ejecutar como: **Yo**.
    - Quién tiene acceso: **Cualquier usuario**.
 6. Copia la URL del Web App generada.
-7. En la aplicación web, abre **Configuración (⚙)**, pega la URL y tu token secreto, y guarda.
+7. En la aplicación web, abre **Configuración (⚙)**, pega la URL y el token, y guarda.
+
+> Si ya tenías el script instalado: pega el nuevo `Code.gs`, ejecuta `generarToken`, **crea una nueva versión** de la implementación y actualiza el token en la app. Las columnas de la hoja pasan a formato texto automáticamente (las fechas ya no se convierten a objetos Date).
 
 ---
 
