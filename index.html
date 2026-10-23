@@ -27,6 +27,9 @@
   /* Brand accents */
   --c-primary: #ea580c;
   --c-primary-hover: #c2410c;
+  --c-primary-solid: #c2410c;        /* fondo de botones: blanco encima = 5.2:1 */
+  --c-primary-solid-hover: #9a3412;
+  --c-primary-text: #f97316;         /* texto naranja sobre superficies */
   --c-primary-light: rgba(234, 88, 12, 0.12);
   --c-amber: #d97706;
   --c-amber-light: rgba(217, 119, 6, 0.12);
@@ -72,8 +75,16 @@
 
   --txt-main: #f5f5f4;
   --txt-muted: #a8a29e;
-  --txt-subtle: #78716c;
+  --txt-subtle: #9c958f;
   --txt-inv: #0c0a09;
+
+  /* Colores de texto con contraste AA sobre superficies oscuras */
+  --st-pendiente: #94a3b8;
+  --st-produccion: #a78bfa;
+  --st-anulado: #f87171;
+  --f-barletta: #60a5fa;
+  --f-amore: #f472b6;
+  --f-fastpan: #34d399;
 
   --shadow-sm: 0 1px 2px rgba(0,0,0,0.4);
   --shadow-md: 0 4px 16px rgba(0,0,0,0.45);
@@ -94,8 +105,21 @@
 
   --txt-main: #1c1917;
   --txt-muted: #57534e;
-  --txt-subtle: #8d857b;
+  --txt-subtle: #6f675e;
   --txt-inv: #ffffff;
+
+  /* Colores de texto con contraste AA sobre superficies claras */
+  --c-primary: #c2410c;
+  --c-primary-text: #9a3412;
+  --c-amber: #b45309;
+  --st-pendiente: #475569;
+  --st-produccion: #6d28d9;
+  --st-pausa: #b45309;
+  --st-entregado: #047857;
+  --st-anulado: #b91c1c;
+  --f-barletta: #1d4ed8;
+  --f-amore: #be185d;
+  --f-fastpan: #065f46;
 
   --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
   --shadow-md: 0 4px 16px rgba(44, 30, 20, 0.08);
@@ -184,6 +208,7 @@ header {
   align-items: center;
   gap: 8px;
   min-width: 0;
+  flex: 1;
 }
 .brand-icon-wrap {
   width: 34px;
@@ -201,6 +226,11 @@ header {
   display: flex;
   flex-direction: column;
   min-width: 0;
+  overflow: hidden;
+}
+.sync-text { overflow: hidden; text-overflow: ellipsis; }
+@media (max-width: 440px) {
+  .app-tag { display: none; }
 }
 .app-name {
   font-size: 1.05rem;
@@ -213,17 +243,17 @@ header {
   white-space: nowrap;
 }
 .app-tag {
-  font-size: 0.65rem;
+  font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   padding: 1px 6px;
   border-radius: var(--r-pill);
   background: var(--c-primary-light);
-  color: var(--c-primary);
+  color: var(--c-primary-text);
 }
 .sync-badge {
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   color: var(--txt-muted);
   display: flex;
   align-items: center;
@@ -375,8 +405,8 @@ header {
   color: var(--txt-main);
 }
 .pill.active {
-  background: var(--c-primary);
-  border-color: var(--c-primary);
+  background: var(--c-primary-solid);
+  border-color: var(--c-primary-solid);
   color: #ffffff;
   font-weight: 600;
   box-shadow: 0 2px 8px rgba(234, 88, 12, 0.25);
@@ -413,7 +443,7 @@ header {
 .kpi-chip.highlight {
   background: var(--c-primary-light);
   border-color: var(--border-accent);
-  color: var(--c-primary);
+  color: var(--c-primary-text);
 }
 .kpi-chip.warn {
   background: var(--c-amber-light);
@@ -499,8 +529,9 @@ main {
   box-shadow: var(--shadow-md);
   transform: translateY(-2px);
 }
-.order-card.status-entregado { opacity: 0.78; }
-.order-card.status-anulado { opacity: 0.55; }
+/* Se atenúa sin opacity para no perder contraste de texto */
+.order-card.status-anulado { filter: grayscale(0.7); }
+.order-card.status-anulado .client-name { text-decoration: line-through; }
 
 /* Top Header of Card */
 .card-top {
@@ -542,7 +573,7 @@ main {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 600;
   padding: 1px 7px;
   border-radius: var(--r-pill);
@@ -561,7 +592,7 @@ main {
   gap: 5px;
   padding: 4px 9px;
   border-radius: var(--r-pill);
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 700;
   white-space: nowrap;
   border: 1px solid transparent;
@@ -610,7 +641,7 @@ main {
   align-items: center;
   justify-content: space-between;
   gap: 6px;
-  font-size: 0.74rem;
+  font-size: 0.75rem;
 }
 .delivery-label {
   display: flex;
@@ -622,7 +653,7 @@ main {
   font-weight: 600;
   padding: 2px 7px;
   border-radius: var(--r-pill);
-  font-size: 0.69rem;
+  font-size: 0.75rem;
 }
 .cd-late { background: var(--st-anulado-bg); color: var(--st-anulado); font-weight: 700; }
 .cd-today { background: var(--c-amber-light); color: var(--c-amber); font-weight: 700; }
@@ -675,18 +706,18 @@ main {
   color: var(--txt-subtle);
   display: grid;
   place-items: center;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 700;
   transition: var(--transition);
 }
 .step-item.completed .step-node {
-  background: var(--st-entregado);
-  border-color: var(--st-entregado);
+  background: #047857;
+  border-color: #047857;
   color: #ffffff;
   box-shadow: 0 0 10px rgba(16, 185, 129, 0.35);
 }
 .step-name {
-  font-size: 0.67rem;
+  font-size: 0.75rem;
   font-weight: 600;
   color: var(--txt-muted);
   text-transform: uppercase;
@@ -696,7 +727,7 @@ main {
   color: var(--st-entregado);
 }
 .step-date {
-  font-size: 0.64rem;
+  font-size: 0.75rem;
   color: var(--txt-subtle);
 }
 
@@ -739,7 +770,7 @@ main {
 }
 .card-action-btn:hover {
   border-color: var(--c-primary);
-  color: var(--c-primary);
+  color: var(--c-primary-text);
   background: var(--c-primary-light);
 }
 
@@ -763,7 +794,7 @@ main {
 .data-table th {
   background: var(--bg-surface-subtle);
   color: var(--txt-muted);
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -779,8 +810,8 @@ main {
 .data-table tr:hover td {
   background: var(--table-hover);
 }
-.data-table tr.status-entregado td { opacity: 0.75; }
-.data-table tr.status-anulado td { opacity: 0.55; }
+.data-table tr.status-anulado td { filter: grayscale(0.7); }
+.data-table tr.status-anulado .table-name { text-decoration: line-through; }
 
 /* Sticky Marca column on mobile table */
 @media (max-width: 640px) {
@@ -829,7 +860,7 @@ main {
   color: var(--txt-subtle);
   border-radius: var(--r-sm);
   padding: 3px 8px;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;
   display: inline-flex;
@@ -856,7 +887,7 @@ main {
   height: 54px;
   border-radius: 50%;
   border: none;
-  background: linear-gradient(135deg, #ea580c, #f59e0b);
+  background: linear-gradient(135deg, #c2410c, #ea580c);
   color: #ffffff;
   font-size: 1.4rem;
   cursor: pointer;
@@ -945,7 +976,7 @@ dialog::backdrop {
   background: transparent;
   color: var(--txt-muted);
   font-family: inherit;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;
   display: flex;
@@ -956,7 +987,7 @@ dialog::backdrop {
   border-bottom: 2px solid transparent;
 }
 .wz-step-btn.active {
-  color: var(--c-primary);
+  color: var(--c-primary-text);
   border-bottom-color: var(--c-primary);
   background: var(--bg-surface);
 }
@@ -1029,7 +1060,7 @@ input:focus, select:focus, textarea:focus {
 }
 select option { background: var(--bg-surface); color: var(--txt-main); }
 textarea { resize: vertical; min-height: 72px; }
-input[type="date"]::-webkit-calendar-picker-indicator {
+[data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator {
   filter: invert(0.6);
   cursor: pointer;
 }
@@ -1054,7 +1085,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 .today-tag-btn:hover {
   border-color: var(--c-primary);
-  color: var(--c-primary);
+  color: var(--c-primary-text);
 }
 
 .hint-banner {
@@ -1106,11 +1137,11 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   transition: var(--transition);
 }
 .btn-primary {
-  background: var(--c-primary);
+  background: var(--c-primary-solid);
   color: #ffffff;
   box-shadow: 0 2px 8px rgba(234, 88, 12, 0.25);
 }
-.btn-primary:hover { background: var(--c-primary-hover); transform: translateY(-1px); }
+.btn-primary:hover { background: var(--c-primary-solid-hover); transform: translateY(-1px); }
 .btn-ghost {
   background: transparent;
   color: var(--txt-muted);
@@ -1126,8 +1157,51 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   border: 1px solid rgba(239, 68, 68, 0.3);
 }
 .btn-danger:hover {
-  background: var(--st-anulado);
+  background: #b91c1c;
   color: #ffffff;
+}
+
+/* ==========================================================================
+   ACCESIBILIDAD: foco visible, objetivos táctiles, 16px en campos, movimiento
+   ========================================================================== */
+button:focus-visible, .pill:focus-visible, [tabindex]:focus-visible {
+  outline: 2px solid var(--c-primary-text);
+  outline-offset: 2px;
+}
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+}
+/* Pantallas táctiles: objetivos de ~40-44px */
+@media (pointer: coarse) {
+  .action-btn { width: 44px; height: 44px; }
+  .view-btn { min-height: 40px; min-width: 40px; justify-content: center; }
+  .pill { min-height: 36px; padding: 6px 14px; }
+  .card-action-btn { min-height: 40px; padding: 6px 14px; }
+  .table-toggle-btn { min-height: 36px; }
+  .dlg-close-btn { width: 44px; height: 44px; }
+  .today-tag-btn { min-width: 52px; min-height: 44px; }
+  .step-item { min-height: 64px; }
+  .btn { min-height: 44px; }
+  .search-input { min-height: 44px; }
+}
+/* iOS Safari hace zoom al enfocar campos < 16px */
+@media (max-width: 640px) {
+  input[type="text"], input[type="number"], input[type="date"], input[type="url"],
+  input[type="search"], input:not([type]), select, textarea, .search-input {
+    font-size: 16px;
+  }
+}
+/* Header compacto al hacer scroll: libera pantalla en móvil */
+header.compact .filter-pills,
+header.compact .header-main-row { display: none; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* Scrollbar styling */
@@ -1172,7 +1246,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
             Control de Maquila
             <span class="app-tag">Ventas</span>
           </div>
-          <div class="sync-badge" id="syncStatus">
+          <div class="sync-badge" id="syncStatus" role="status" aria-live="polite">
             <span class="sync-dot"></span>
             <span class="sync-text">Iniciando…</span>
           </div>
@@ -1181,17 +1255,17 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 
       <div class="header-actions">
         <!-- Theme toggle: Light / Dark -->
-        <button class="action-btn" id="btnThemeToggle" title="Cambiar Tema (Claro / Oscuro)">
+        <button class="action-btn" id="btnThemeToggle" title="Cambiar tema (claro / oscuro)" aria-label="Cambiar tema claro u oscuro">
           <svg class="svg-icon" id="themeIcon"><use href="#icon-sun"/></svg>
         </button>
 
         <!-- Sync button -->
-        <button class="action-btn" id="btnSync" title="Sincronizar con Google Sheets">
+        <button class="action-btn" id="btnSync" title="Sincronizar con Google Sheets" aria-label="Sincronizar con Google Sheets">
           <svg class="svg-icon"><use href="#icon-refresh"/></svg>
         </button>
 
         <!-- Settings button -->
-        <button class="action-btn" id="btnCfg" title="Configuración de Sheets">
+        <button class="action-btn" id="btnCfg" title="Configuración de Sheets" aria-label="Abrir configuración de Google Sheets">
           <svg class="svg-icon"><use href="#icon-settings"/></svg>
         </button>
       </div>
@@ -1201,16 +1275,16 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     <div class="toolbar-row">
       <div class="search-box">
         <svg class="svg-icon search-icon"><use href="#icon-search"/></svg>
-        <input type="search" class="search-input" id="q" placeholder="Buscar cliente, marca u observaciones…" autocomplete="off">
+        <input type="search" class="search-input" id="q" aria-label="Buscar pedidos" placeholder="Buscar pedido…" autocomplete="off">
       </div>
 
       <!-- View Toggle: Cards vs Table -->
       <div class="view-toggle" role="group" aria-label="Cambiar vista">
-        <button class="view-btn active" id="btnViewCards" title="Vista Tarjetas">
+        <button class="view-btn active" id="btnViewCards" title="Vista Tarjetas" aria-label="Vista de tarjetas" aria-pressed="true">
           <svg class="svg-icon"><use href="#icon-grid"/></svg>
           <span class="view-label">Tarjetas</span>
         </button>
-        <button class="view-btn" id="btnViewTable" title="Vista Tabla Compacta">
+        <button class="view-btn" id="btnViewTable" title="Vista Tabla Compacta" aria-label="Vista de tabla" aria-pressed="false">
           <svg class="svg-icon"><use href="#icon-table"/></svg>
           <span class="view-label">Tabla</span>
         </button>
@@ -1218,14 +1292,14 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     </div>
 
     <!-- Filter Pills Row -->
-    <div class="filter-pills" id="filterPills">
-      <button class="pill active" data-filter="activos">Activos</button>
-      <button class="pill" data-filter="todos">Todos</button>
-      <button class="pill" data-filter="Pendiente">Pendiente</button>
-      <button class="pill" data-filter="En producción">En producción</button>
-      <button class="pill" data-filter="En pausa">En pausa</button>
-      <button class="pill" data-filter="Entregado">Entregado</button>
-      <button class="pill" data-filter="Anulado">Anulado</button>
+    <div class="filter-pills" id="filterPills" role="group" aria-label="Filtrar por estado">
+      <button class="pill active" data-filter="activos" aria-pressed="true">Activos</button>
+      <button class="pill" data-filter="todos" aria-pressed="false">Todos</button>
+      <button class="pill" data-filter="Pendiente" aria-pressed="false">Pendiente</button>
+      <button class="pill" data-filter="En producción" aria-pressed="false">En producción</button>
+      <button class="pill" data-filter="En pausa" aria-pressed="false">En pausa</button>
+      <button class="pill" data-filter="Entregado" aria-pressed="false">Entregado</button>
+      <button class="pill" data-filter="Anulado" aria-pressed="false">Anulado</button>
     </div>
   </div>
 </header>
@@ -1306,7 +1380,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
               <option value="Fastpan">Fastpan</option>
             </select>
           </label>
-          <div class="form-error-msg" id="errPanel0"></div>
+          <div class="form-error-msg" role="alert" id="errPanel0"></div>
         </div>
       </div>
 
@@ -1325,7 +1399,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
             Fecha de Entrega Comprometida
             <input name="fechaEntrega" type="date">
           </label>
-          <div class="form-error-msg" id="errPanel1"></div>
+          <div class="form-error-msg" role="alert" id="errPanel1"></div>
         </div>
       </div>
 
@@ -1381,7 +1455,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
             Observaciones y Acuerdos de Venta
             <textarea name="observaciones" placeholder="Caja especial, bolsas, tipo de pasas, anticipo pagado, etc."></textarea>
           </label>
-          <div class="form-error-msg" id="errPanel3"></div>
+          <div class="form-error-msg" role="alert" id="errPanel3"></div>
         </div>
       </div>
 
@@ -1428,7 +1502,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
         </label>
         <label class="form-label fg-full">
           Token de Seguridad (Contraseña)
-          <input name="token" type="text" autocomplete="off" placeholder="Tu token secreto configurado en Code.gs">
+          <input name="token" type="password" autocomplete="off" placeholder="Tu token secreto configurado en Code.gs">
         </label>
       </div>
     </div>
@@ -1599,6 +1673,8 @@ function setViewMode(mode) {
   lsSet(LS_VIEW, mode);
   $('#btnViewCards').classList.toggle('active', mode === 'cards');
   $('#btnViewTable').classList.toggle('active', mode === 'table');
+  $('#btnViewCards').setAttribute('aria-pressed', String(mode === 'cards'));
+  $('#btnViewTable').setAttribute('aria-pressed', String(mode === 'table'));
   render();
 }
 $('#btnViewCards').addEventListener('click', () => setViewMode('cards'));
@@ -1707,7 +1783,7 @@ function renderCard(p) {
   const stepsHtml = STEPS.map(s => {
     const done = !!p[s.key];
     return `
-      <button type="button" class="step-item ${done ? 'completed' : ''}" data-step="${s.key}" data-id="${esc(p.id)}" title="${s.label}: clic para marcar/desmarcar">
+      <button type="button" class="step-item ${done ? 'completed' : ''}" data-step="${s.key}" data-id="${esc(p.id)}" title="${s.label}: clic para marcar/desmarcar" aria-pressed="${done}" aria-label="${s.label}${done ? ' (completado ' + fmt(p[s.key]) + ')' : ' (pendiente)'}">
         <div class="step-node">
           ${done ? '<svg class="svg-icon" style="font-size:0.8rem;"><use href="#icon-check"/></svg>' : s.stepNum}
         </div>
@@ -1740,12 +1816,12 @@ function renderCard(p) {
           <svg class="svg-icon"><use href="#icon-box"/></svg>
           <span class="metric-value">${p.cantidad.toLocaleString('es-PE')}</span> und
         </span>
-        <span class="metric-sep">•</span>
+        <span class="metric-sep" aria-hidden="true">•</span>
         <span class="metric-item">
           <span class="metric-value">${p.peso}</span> g
         </span>
         ${p.fechaPedido ? `
-          <span class="metric-sep">•</span>
+          <span class="metric-sep" aria-hidden="true">•</span>
           <span class="metric-item">
             Ped: <span class="metric-value">${fmt(p.fechaPedido)}</span>
           </span>
@@ -1797,7 +1873,7 @@ function renderTable(list) {
             <div class="table-avatar ${av.cls}">${av.char}</div>
             <div>
               <div class="table-name" title="${esc(p.marca)}">${esc(p.marca)}</div>
-              ${p.formula ? `<span class="client-formula ${fCls}" style="font-size:0.65rem;">${esc(p.formula)}</span>` : ''}
+              ${p.formula ? `<span class="client-formula ${fCls}" style="font-size:0.75rem;">${esc(p.formula)}</span>` : ''}
             </div>
           </div>
         </td>
@@ -1889,8 +1965,9 @@ $('#mainContainer').addEventListener('click', ev => {
 $('#filterPills').addEventListener('click', ev => {
   const pill = ev.target.closest('.pill');
   if (!pill) return;
-  document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.pill').forEach(p => { p.classList.remove('active'); p.setAttribute('aria-pressed', 'false'); });
   pill.classList.add('active');
+  pill.setAttribute('aria-pressed', 'true');
   activeFilter = pill.dataset.filter;
   render();
 });
@@ -2010,12 +2087,15 @@ formPedido.addEventListener('click', ev => {
   if (b) formPedido.elements[b.dataset.hoy].value = hoy();
 });
 
+// Evita que Sheets interprete el texto como fórmula (=, +, @ al inicio). El '-' es válido.
+const noFormula = v => { const t = String(v ?? '').replace(/^[\t\r]+/, ''); return /^[=+@]/.test(t) ? ' ' + t : t; };
+
 function saveWizard() {
   if (!validatePanel(0)) { currentPanel = 0; updateWizardUI(); return; }
   const f = Object.fromEntries(new FormData(formPedido));
   // sanitize formula injection
-  f.observaciones = String(f.observaciones ?? '').replace(/^[=+\-@\t\r]+/, '');
-  f.marca = f.marca.trim();
+  f.observaciones = noFormula(f.observaciones);
+  f.marca = noFormula(f.marca.trim());
 
   let p = f.id ? pedidos.find(x => x.id === f.id) : null;
   if (!p) { p = norm({ id: uid() }); pedidos.push(p); }
@@ -2113,6 +2193,20 @@ $('#btnSync').addEventListener('click', sync);
 window.addEventListener('online', sync);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) sync(); });
 setInterval(() => { if (!document.hidden) sync(); }, 120_000);
+
+/* ===== HEADER COMPACTO AL HACER SCROLL (histéresis para evitar parpadeo) ===== */
+(function () {
+  const hdr = document.querySelector('header');
+  let ticking = false;
+  function upd() {
+    ticking = false;
+    const y = window.scrollY;
+    const scrollable = document.documentElement.scrollHeight - window.innerHeight > 360;
+    if (!hdr.classList.contains('compact') && y > 140 && scrollable) hdr.classList.add('compact');
+    else if (hdr.classList.contains('compact') && y < 20) hdr.classList.remove('compact');
+  }
+  window.addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(upd); } }, { passive: true });
+})();
 
 /* ===== SERVICE WORKER ===== */
 if ('serviceWorker' in navigator) {
