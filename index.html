@@ -1,0 +1,2103 @@
+<!doctype html>
+<html lang="es" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#ea580c">
+<meta name="description" content="Control de pedidos de maquila de panetones personalizados">
+<title>Control de Maquila · Ventas</title>
+<link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ==========================================================================
+   DESIGN SYSTEM - UI/UX PRO MAX (Warm Artisan SaaS Theme)
+   ========================================================================== */
+:root {
+  /* Brand accents */
+  --c-primary: #ea580c;
+  --c-primary-hover: #c2410c;
+  --c-primary-light: rgba(234, 88, 12, 0.12);
+  --c-amber: #d97706;
+  --c-amber-light: rgba(217, 119, 6, 0.12);
+
+  /* Formulas */
+  --f-barletta: #2563eb;
+  --f-barletta-bg: rgba(37, 99, 235, 0.12);
+  --f-amore: #db2777;
+  --f-amore-bg: rgba(219, 39, 119, 0.12);
+  --f-fastpan: #059669;
+  --f-fastpan-bg: rgba(5, 150, 105, 0.12);
+
+  /* Status Tokens */
+  --st-pendiente: #64748b;
+  --st-pendiente-bg: rgba(100, 116, 139, 0.12);
+  --st-produccion: #8b5cf6;
+  --st-produccion-bg: rgba(139, 92, 246, 0.14);
+  --st-pausa: #f59e0b;
+  --st-pausa-bg: rgba(245, 158, 11, 0.14);
+  --st-entregado: #10b981;
+  --st-entregado-bg: rgba(16, 185, 129, 0.14);
+  --st-anulado: #ef4444;
+  --st-anulado-bg: rgba(239, 68, 68, 0.14);
+
+  /* Radius & Transitions */
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --r-xl: 20px;
+  --r-pill: 9999px;
+  --transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* DARK THEME (Default) */
+[data-theme="dark"] {
+  --bg-app: #0c0a09;
+  --bg-surface: #171412;
+  --bg-surface-elevated: #221e1a;
+  --bg-surface-subtle: #1c1815;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.16);
+  --border-accent: rgba(234, 88, 12, 0.35);
+
+  --txt-main: #f5f5f4;
+  --txt-muted: #a8a29e;
+  --txt-subtle: #78716c;
+  --txt-inv: #0c0a09;
+
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.4);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.45);
+  --shadow-lg: 0 12px 36px rgba(0,0,0,0.6);
+  --table-stripe: rgba(255, 255, 255, 0.02);
+  --table-hover: rgba(234, 88, 12, 0.06);
+}
+
+/* LIGHT THEME */
+[data-theme="light"] {
+  --bg-app: #f8f6f2;
+  --bg-surface: #ffffff;
+  --bg-surface-elevated: #ffffff;
+  --bg-surface-subtle: #f1ede5;
+  --border: #e6dfd5;
+  --border-strong: #d4cbbe;
+  --border-accent: rgba(234, 88, 12, 0.4);
+
+  --txt-main: #1c1917;
+  --txt-muted: #57534e;
+  --txt-subtle: #8d857b;
+  --txt-inv: #ffffff;
+
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-md: 0 4px 16px rgba(44, 30, 20, 0.08);
+  --shadow-lg: 0 12px 32px rgba(44, 30, 20, 0.12);
+  --table-stripe: rgba(0, 0, 0, 0.015);
+  --table-hover: rgba(234, 88, 12, 0.05);
+}
+
+/* ==========================================================================
+   RESET & FOUNDATION
+   ========================================================================== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html {
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+  max-width: 100vw;
+  width: 100%;
+}
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--bg-app);
+  color: var(--txt-main);
+  min-height: 100dvh;
+  padding-bottom: calc(90px + env(safe-area-inset-bottom, 0px));
+  overflow-x: hidden;
+  max-width: 100vw;
+  width: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Background aesthetic gradient */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle 800px at 50% -200px, rgba(234, 88, 12, 0.08), transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Standard SVG icon utility */
+.svg-icon {
+  width: 1em;
+  height: 1em;
+  display: inline-block;
+  vertical-align: -0.15em;
+  stroke-width: 2;
+  stroke: currentColor;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex-shrink: 0;
+}
+
+/* ==========================================================================
+   HEADER & NAVBAR
+   ========================================================================== */
+header {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.header-bar {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.header-main-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.brand-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.brand-icon-wrap {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--r-md);
+  background: linear-gradient(135deg, #ea580c, #f59e0b);
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-size: 1.1rem;
+  box-shadow: 0 2px 8px rgba(234, 88, 12, 0.35);
+  flex-shrink: 0;
+}
+.brand-titles {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.app-name {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--txt-main);
+  letter-spacing: -0.02em;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.app-tag {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 1px 6px;
+  border-radius: var(--r-pill);
+  background: var(--c-primary-light);
+  color: var(--c-primary);
+}
+.sync-badge {
+  font-size: 0.7rem;
+  color: var(--txt-muted);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 1px;
+  white-space: nowrap;
+}
+.sync-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--st-pendiente);
+  flex-shrink: 0;
+}
+.sync-badge.ok .sync-dot { background: var(--st-entregado); box-shadow: 0 0 6px var(--st-entregado); }
+.sync-badge.warn .sync-dot { background: var(--c-amber); }
+.sync-badge.bad .sync-dot { background: var(--st-anulado); }
+
+/* Header controls (right) */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.action-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border);
+  background: var(--bg-surface-subtle);
+  color: var(--txt-muted);
+  display: grid;
+  place-items: center;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: var(--transition);
+  flex-shrink: 0;
+}
+.action-btn:hover {
+  background: var(--bg-surface-elevated);
+  border-color: var(--border-strong);
+  color: var(--txt-main);
+}
+.action-btn.spinning .svg-icon {
+  animation: spin 1s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* View Mode Segmented Switch */
+.view-toggle {
+  display: inline-flex;
+  background: var(--bg-surface-subtle);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 2px;
+  gap: 2px;
+  flex-shrink: 0;
+}
+.view-btn {
+  border: none;
+  background: transparent;
+  color: var(--txt-muted);
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 6px 10px;
+  border-radius: calc(var(--r-sm) - 2px);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: var(--transition);
+}
+.view-btn.active {
+  background: var(--bg-surface-elevated);
+  color: var(--txt-main);
+  box-shadow: var(--shadow-sm);
+}
+@media (max-width: 580px) {
+  .view-btn .view-label { display: none; }
+  .view-btn { padding: 6px 8px; }
+  .app-name { font-size: 0.98rem; }
+}
+
+/* Search and Toolbar */
+.toolbar-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.search-box {
+  position: relative;
+  flex: 1;
+}
+.search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--txt-subtle);
+  font-size: 0.95rem;
+  pointer-events: none;
+}
+.search-input {
+  width: 100%;
+  padding: 8px 12px 8px 36px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border);
+  background: var(--bg-surface-subtle);
+  color: var(--txt-main);
+  font-size: 0.88rem;
+  font-family: inherit;
+  transition: var(--transition);
+}
+.search-input:focus {
+  outline: none;
+  border-color: var(--c-primary);
+  background: var(--bg-surface);
+  box-shadow: 0 0 0 3px var(--c-primary-light);
+}
+
+/* Filter Pills */
+.filter-pills {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+}
+.filter-pills::-webkit-scrollbar { display: none; }
+.pill {
+  flex-shrink: 0;
+  padding: 5px 12px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--border);
+  background: var(--bg-surface-subtle);
+  color: var(--txt-muted);
+  font-size: 0.76rem;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: var(--transition);
+  font-family: inherit;
+}
+.pill:hover {
+  border-color: var(--border-strong);
+  color: var(--txt-main);
+}
+.pill.active {
+  background: var(--c-primary);
+  border-color: var(--c-primary);
+  color: #ffffff;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(234, 88, 12, 0.25);
+}
+
+/* ==========================================================================
+   KPI SUMMARY CHIPS
+   ========================================================================== */
+.summary-container {
+  max-width: 1200px;
+  margin: 14px auto 0;
+  padding: 0 16px;
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.summary-container::-webkit-scrollbar { display: none; }
+.kpi-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: var(--r-pill);
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--txt-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.kpi-chip .svg-icon { font-size: 0.85rem; }
+.kpi-chip.highlight {
+  background: var(--c-primary-light);
+  border-color: var(--border-accent);
+  color: var(--c-primary);
+}
+.kpi-chip.warn {
+  background: var(--c-amber-light);
+  border-color: rgba(217, 119, 6, 0.3);
+  color: var(--c-amber);
+}
+.kpi-chip.danger {
+  background: var(--st-anulado-bg);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: var(--st-anulado);
+  animation: pulse-danger 2s infinite;
+}
+@keyframes pulse-danger {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.3); }
+  50% { box-shadow: 0 0 0 5px rgba(239, 68, 68, 0); }
+}
+
+/* ==========================================================================
+   CONTAINER & VIEWS
+   ========================================================================== */
+main {
+  max-width: 1200px;
+  margin: 16px auto 0;
+  padding: 0 16px;
+}
+
+/* Empty State */
+.empty-box {
+  padding: 60px 20px;
+  text-align: center;
+  color: var(--txt-muted);
+  background: var(--bg-surface);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--r-lg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+.empty-icon-wrap {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--bg-surface-subtle);
+  display: grid;
+  place-items: center;
+  font-size: 1.5rem;
+  color: var(--txt-subtle);
+}
+.empty-title { font-size: 1rem; font-weight: 600; color: var(--txt-main); }
+.empty-desc { font-size: 0.83rem; max-width: 320px; }
+
+/* ==========================================================================
+   CARDS VIEW (Refined UI/UX Pro Max)
+   ========================================================================== */
+.cards-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+@media (min-width: 640px) {
+  .cards-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (min-width: 1024px) {
+  .cards-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+.order-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+.order-card:hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+.order-card.status-entregado { opacity: 0.78; }
+.order-card.status-anulado { opacity: 0.55; }
+
+/* Top Header of Card */
+.card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+.client-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.client-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--r-md);
+  font-weight: 700;
+  font-size: 0.95rem;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  text-transform: uppercase;
+}
+.client-text {
+  min-width: 0;
+}
+.client-name {
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: var(--txt-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.client-formula {
+  margin-top: 2px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 1px 7px;
+  border-radius: var(--r-pill);
+}
+
+/* Formula Specific Styles */
+.f-barletta { background: var(--f-barletta-bg); color: var(--f-barletta); border: 1px solid rgba(37, 99, 235, 0.25); }
+.f-amore    { background: var(--f-amore-bg); color: var(--f-amore); border: 1px solid rgba(219, 39, 119, 0.25); }
+.f-fastpan  { background: var(--f-fastpan-bg); color: var(--f-fastpan); border: 1px solid rgba(5, 150, 105, 0.25); }
+.f-other    { background: var(--bg-surface-subtle); color: var(--txt-muted); border: 1px solid var(--border); }
+
+/* Status Badges */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 9px;
+  border-radius: var(--r-pill);
+  font-size: 0.7rem;
+  font-weight: 700;
+  white-space: nowrap;
+  border: 1px solid transparent;
+  flex-shrink: 0;
+}
+.status-badge .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.sb-pendiente  { background: var(--st-pendiente-bg); color: var(--st-pendiente); border-color: rgba(100, 116, 139, 0.25); }
+.sb-produccion { background: var(--st-produccion-bg); color: var(--st-produccion); border-color: rgba(139, 92, 246, 0.25); }
+.sb-pausa      { background: var(--st-pausa-bg); color: var(--st-pausa); border-color: rgba(245, 158, 11, 0.25); }
+.sb-entregado  { background: var(--st-entregado-bg); color: var(--st-entregado); border-color: rgba(16, 185, 129, 0.25); }
+.sb-anulado    { background: var(--st-anulado-bg); color: var(--st-anulado); border-color: rgba(239, 68, 68, 0.25); }
+
+/* Card Metrics Strip */
+.card-metrics {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 8px 10px;
+  background: var(--bg-surface-subtle);
+  border-radius: var(--r-sm);
+  font-size: 0.76rem;
+  color: var(--txt-muted);
+}
+.metric-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.metric-value {
+  font-weight: 700;
+  color: var(--txt-main);
+}
+.metric-sep {
+  color: var(--border-strong);
+}
+
+/* Delivery alert strip */
+.delivery-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  font-size: 0.74rem;
+}
+.delivery-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--txt-subtle);
+}
+.countdown-tag {
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: var(--r-pill);
+  font-size: 0.69rem;
+}
+.cd-late { background: var(--st-anulado-bg); color: var(--st-anulado); font-weight: 700; }
+.cd-today { background: var(--c-amber-light); color: var(--c-amber); font-weight: 700; }
+.cd-soon { background: var(--c-amber-light); color: var(--c-amber); }
+.cd-normal { color: var(--txt-muted); }
+
+/* Connected Step Pipeline */
+.step-pipeline {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  position: relative;
+  gap: 4px;
+  padding-top: 6px;
+}
+.step-pipeline::before {
+  content: '';
+  position: absolute;
+  top: 19px;
+  left: 15%;
+  right: 15%;
+  height: 2px;
+  background: var(--border);
+  z-index: 1;
+}
+.step-item {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: var(--r-sm);
+  font-family: inherit;
+  transition: var(--transition);
+}
+.step-item:hover .step-node {
+  transform: scale(1.1);
+  border-color: var(--c-primary);
+}
+.step-node {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid var(--border-strong);
+  background: var(--bg-surface);
+  color: var(--txt-subtle);
+  display: grid;
+  place-items: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  transition: var(--transition);
+}
+.step-item.completed .step-node {
+  background: var(--st-entregado);
+  border-color: var(--st-entregado);
+  color: #ffffff;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.35);
+}
+.step-name {
+  font-size: 0.67rem;
+  font-weight: 600;
+  color: var(--txt-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.step-item.completed .step-name {
+  color: var(--st-entregado);
+}
+.step-date {
+  font-size: 0.64rem;
+  color: var(--txt-subtle);
+}
+
+/* Card Observations */
+.card-note {
+  font-size: 0.77rem;
+  color: var(--txt-muted);
+  background: var(--bg-surface-subtle);
+  border-radius: var(--r-sm);
+  padding: 7px 10px;
+  border-left: 2px solid var(--c-amber);
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.4;
+}
+
+/* Card Footer */
+.card-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-top: 6px;
+  border-top: 1px solid var(--border);
+  margin-top: auto;
+}
+.card-action-btn {
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--txt-muted);
+  font-family: inherit;
+  font-size: 0.76rem;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: var(--transition);
+}
+.card-action-btn:hover {
+  border-color: var(--c-primary);
+  color: var(--c-primary);
+  background: var(--c-primary-light);
+}
+
+/* ==========================================================================
+   DATA TABLE / SPREADSHEET VIEW (Compact for Sales)
+   ========================================================================== */
+.table-wrapper {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  overflow-x: auto;
+  box-shadow: var(--shadow-sm);
+}
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+  text-align: left;
+  white-space: nowrap;
+}
+.data-table th {
+  background: var(--bg-surface-subtle);
+  color: var(--txt-muted);
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+}
+.data-table td {
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--border);
+  color: var(--txt-main);
+  vertical-align: middle;
+}
+.data-table tr:hover td {
+  background: var(--table-hover);
+}
+.data-table tr.status-entregado td { opacity: 0.75; }
+.data-table tr.status-anulado td { opacity: 0.55; }
+
+/* Sticky Marca column on mobile table */
+@media (max-width: 640px) {
+  .data-table th:first-child,
+  .data-table td:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 5;
+    background: var(--bg-surface);
+    box-shadow: 2px 0 6px rgba(0,0,0,0.1);
+  }
+  .data-table tr:hover td:first-child {
+    background: var(--bg-surface-elevated);
+  }
+}
+
+.table-client {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.table-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: var(--r-sm);
+  display: grid;
+  place-items: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.table-toggle-btn {
+  border: 1px solid var(--border);
+  background: var(--bg-surface-subtle);
+  color: var(--txt-subtle);
+  border-radius: var(--r-sm);
+  padding: 3px 8px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: var(--transition);
+  font-family: inherit;
+}
+.table-toggle-btn.done {
+  background: var(--st-entregado-bg);
+  border-color: rgba(16, 185, 129, 0.35);
+  color: var(--st-entregado);
+}
+
+/* ==========================================================================
+   FAB & DIALOGS
+   ========================================================================== */
+.fab {
+  position: fixed;
+  right: max(20px, env(safe-area-inset-right, 0px));
+  bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  z-index: 25;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(135deg, #ea580c, #f59e0b);
+  color: #ffffff;
+  font-size: 1.4rem;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(234, 88, 12, 0.45);
+  display: grid;
+  place-items: center;
+  transition: var(--transition);
+}
+.fab:hover {
+  transform: scale(1.08) rotate(90deg);
+  box-shadow: 0 6px 26px rgba(234, 88, 12, 0.6);
+}
+.fab:active { transform: scale(0.95); }
+
+/* Standard Dialog Style */
+dialog {
+  border: none;
+  border-radius: var(--r-xl);
+  padding: 0;
+  background: var(--bg-surface);
+  color: var(--txt-main);
+  width: min(560px, 94vw);
+  box-shadow: var(--shadow-lg), 0 0 0 1px var(--border);
+  max-height: 90dvh;
+  overflow: hidden;
+  margin: auto;
+}
+dialog:not([open]) {
+  display: none !important;
+}
+dialog[open] {
+  display: flex;
+  flex-direction: column;
+  animation: modalIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.95) translateY(12px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+dialog::backdrop {
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+}
+
+/* Modal Inner Structure */
+.dlg-header {
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+.dlg-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--txt-main);
+}
+.dlg-close-btn {
+  background: transparent;
+  border: none;
+  color: var(--txt-subtle);
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: var(--r-sm);
+  display: grid;
+  place-items: center;
+  transition: var(--transition);
+}
+.dlg-close-btn:hover { color: var(--txt-main); background: var(--bg-surface-subtle); }
+
+.dlg-steps-nav {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  background: var(--bg-surface-subtle);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.wz-step-btn {
+  padding: 9px 4px;
+  border: none;
+  background: transparent;
+  color: var(--txt-muted);
+  font-family: inherit;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  transition: var(--transition);
+  border-bottom: 2px solid transparent;
+}
+.wz-step-btn.active {
+  color: var(--c-primary);
+  border-bottom-color: var(--c-primary);
+  background: var(--bg-surface);
+}
+.wz-step-btn.done {
+  color: var(--st-entregado);
+}
+
+.dlg-body {
+  padding: 16px 20px;
+  overflow-y: auto;
+  flex: 1;
+}
+.wz-panel { display: none; }
+.wz-panel.active { display: block; animation: panelFade 0.2s ease both; }
+@keyframes panelFade {
+  from { opacity: 0; transform: translateX(6px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* Forms & Inputs */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.fg-full { grid-column: 1 / -1; }
+.form-label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--txt-muted);
+}
+input[type="text"],
+input[type="number"],
+input[type="date"],
+input[type="url"],
+input:not([type]),
+select,
+textarea {
+  font-family: inherit;
+  font-size: 0.88rem;
+  color: var(--txt-main);
+  background: var(--bg-surface-subtle);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 9px 12px;
+  width: 100%;
+  transition: var(--transition);
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* Hide number arrows / spinners */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none !important;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--c-primary);
+  background: var(--bg-surface);
+  box-shadow: 0 0 0 3px var(--c-primary-light);
+}
+select option { background: var(--bg-surface); color: var(--txt-main); }
+textarea { resize: vertical; min-height: 72px; }
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.6);
+  cursor: pointer;
+}
+
+.date-input-group {
+  display: flex;
+  gap: 6px;
+}
+.date-input-group input { flex: 1; }
+.today-tag-btn {
+  flex-shrink: 0;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  background: var(--bg-surface-subtle);
+  color: var(--txt-muted);
+  border-radius: var(--r-sm);
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.today-tag-btn:hover {
+  border-color: var(--c-primary);
+  color: var(--c-primary);
+}
+
+.hint-banner {
+  background: var(--c-primary-light);
+  border: 1px solid var(--border-accent);
+  border-radius: var(--r-sm);
+  padding: 8px 12px;
+  font-size: 0.77rem;
+  color: var(--txt-muted);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.form-error-msg {
+  grid-column: 1 / -1;
+  font-size: 0.76rem;
+  color: var(--st-anulado);
+  background: var(--st-anulado-bg);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: var(--r-sm);
+  padding: 8px 12px;
+  display: none;
+}
+.form-error-msg.visible { display: block; }
+
+/* Modal Footer */
+.dlg-footer {
+  padding: 12px 20px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-surface-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.btn {
+  font-family: inherit;
+  font-size: 0.83rem;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: var(--r-sm);
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: var(--transition);
+}
+.btn-primary {
+  background: var(--c-primary);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(234, 88, 12, 0.25);
+}
+.btn-primary:hover { background: var(--c-primary-hover); transform: translateY(-1px); }
+.btn-ghost {
+  background: transparent;
+  color: var(--txt-muted);
+  border: 1px solid var(--border);
+}
+.btn-ghost:hover {
+  background: var(--bg-surface-elevated);
+  color: var(--txt-main);
+}
+.btn-danger {
+  background: var(--st-anulado-bg);
+  color: var(--st-anulado);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+.btn-danger:hover {
+  background: var(--st-anulado);
+  color: #ffffff;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<!-- SVG SYMBOL ICONS -->
+<svg style="display: none;">
+  <symbol id="icon-box" viewBox="0 0 24 24"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></symbol>
+  <symbol id="icon-calendar" viewBox="0 0 24 24"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></symbol>
+  <symbol id="icon-check" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></symbol>
+  <symbol id="icon-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></symbol>
+  <symbol id="icon-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></symbol>
+  <symbol id="icon-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol>
+  <symbol id="icon-edit" viewBox="0 0 24 24"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></symbol>
+  <symbol id="icon-trash" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></symbol>
+  <symbol id="icon-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></symbol>
+  <symbol id="icon-refresh" viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></symbol>
+  <symbol id="icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></symbol>
+  <symbol id="icon-moon" viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></symbol>
+  <symbol id="icon-grid" viewBox="0 0 24 24"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></symbol>
+  <symbol id="icon-table" viewBox="0 0 24 24"><path d="M12 3v18"/><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M3 15h18"/></symbol>
+  <symbol id="icon-plus" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></symbol>
+  <symbol id="icon-x" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol>
+  <symbol id="icon-layers" viewBox="0 0 24 24"><path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"/><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/></symbol>
+</svg>
+
+<!-- HEADER -->
+<header>
+  <div class="header-bar">
+    <div class="header-main-row">
+      <div class="brand-group">
+        <div class="brand-icon-wrap">
+          <svg class="svg-icon"><use href="#icon-layers"/></svg>
+        </div>
+        <div class="brand-titles">
+          <div class="app-name">
+            Control de Maquila
+            <span class="app-tag">Ventas</span>
+          </div>
+          <div class="sync-badge" id="syncStatus">
+            <span class="sync-dot"></span>
+            <span class="sync-text">Iniciando…</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <!-- Theme toggle: Light / Dark -->
+        <button class="action-btn" id="btnThemeToggle" title="Cambiar Tema (Claro / Oscuro)">
+          <svg class="svg-icon" id="themeIcon"><use href="#icon-sun"/></svg>
+        </button>
+
+        <!-- Sync button -->
+        <button class="action-btn" id="btnSync" title="Sincronizar con Google Sheets">
+          <svg class="svg-icon"><use href="#icon-refresh"/></svg>
+        </button>
+
+        <!-- Settings button -->
+        <button class="action-btn" id="btnCfg" title="Configuración de Sheets">
+          <svg class="svg-icon"><use href="#icon-settings"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Toolbar: Search Box & View Switcher -->
+    <div class="toolbar-row">
+      <div class="search-box">
+        <svg class="svg-icon search-icon"><use href="#icon-search"/></svg>
+        <input type="search" class="search-input" id="q" placeholder="Buscar cliente, marca u observaciones…" autocomplete="off">
+      </div>
+
+      <!-- View Toggle: Cards vs Table -->
+      <div class="view-toggle" role="group" aria-label="Cambiar vista">
+        <button class="view-btn active" id="btnViewCards" title="Vista Tarjetas">
+          <svg class="svg-icon"><use href="#icon-grid"/></svg>
+          <span class="view-label">Tarjetas</span>
+        </button>
+        <button class="view-btn" id="btnViewTable" title="Vista Tabla Compacta">
+          <svg class="svg-icon"><use href="#icon-table"/></svg>
+          <span class="view-label">Tabla</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Filter Pills Row -->
+    <div class="filter-pills" id="filterPills">
+      <button class="pill active" data-filter="activos">Activos</button>
+      <button class="pill" data-filter="todos">Todos</button>
+      <button class="pill" data-filter="Pendiente">Pendiente</button>
+      <button class="pill" data-filter="En producción">En producción</button>
+      <button class="pill" data-filter="En pausa">En pausa</button>
+      <button class="pill" data-filter="Entregado">Entregado</button>
+      <button class="pill" data-filter="Anulado">Anulado</button>
+    </div>
+  </div>
+</header>
+
+<!-- KPI SUMMARY STRIP -->
+<div class="summary-container" id="summaryRow"></div>
+
+<!-- MAIN CONTENT -->
+<main id="mainContainer"></main>
+
+<!-- FLOATING ACTION BUTTON (NEW ORDER) -->
+<button class="fab" id="btnNew" aria-label="Nuevo pedido" title="Nuevo pedido">
+  <svg class="svg-icon" style="font-size: 1.5rem;"><use href="#icon-plus"/></svg>
+</button>
+
+<!-- ==========================================================================
+     MODAL: NUEVO / EDITAR PEDIDO (WIZARD)
+     ========================================================================== -->
+<dialog id="dlgPedido" aria-modal="true" aria-labelledby="dlgTitle">
+  <div class="dlg-header">
+    <div class="dlg-title-wrap">
+      <svg class="svg-icon" style="color: var(--c-primary);"><use href="#icon-box"/></svg>
+      <span id="dlgTitle">Nuevo Pedido</span>
+    </div>
+    <button type="button" class="dlg-close-btn" id="btnWzClose" aria-label="Cerrar">
+      <svg class="svg-icon"><use href="#icon-x"/></svg>
+    </button>
+  </div>
+
+  <div class="dlg-steps-nav" id="wzNav">
+    <button type="button" class="wz-step-btn active" data-panel="0">
+      <svg class="svg-icon"><use href="#icon-box"/></svg>
+      <span>1. Datos</span>
+    </button>
+    <button type="button" class="wz-step-btn" data-panel="1">
+      <svg class="svg-icon"><use href="#icon-calendar"/></svg>
+      <span>2. Fechas</span>
+    </button>
+    <button type="button" class="wz-step-btn" data-panel="2">
+      <svg class="svg-icon"><use href="#icon-check"/></svg>
+      <span>3. Avance</span>
+    </button>
+    <button type="button" class="wz-step-btn" data-panel="3">
+      <svg class="svg-icon"><use href="#icon-clock"/></svg>
+      <span>4. Estado</span>
+    </button>
+  </div>
+
+  <div class="dlg-body">
+    <form id="formPedido" novalidate>
+      <input type="hidden" name="id">
+
+      <!-- Panel 0: Datos del Pedido -->
+      <div class="wz-panel active" id="panel0">
+        <div class="hint-banner">
+          <svg class="svg-icon" style="color: var(--c-primary); margin-top: 2px;"><use href="#icon-box"/></svg>
+          <div>Ingresa la marca o cliente, el volumen acordado y la fórmula de panetón solicitada.</div>
+        </div>
+        <div class="form-grid">
+          <label class="form-label fg-full">
+            Marca / Cliente
+            <input name="marca" type="text" required autocomplete="off" placeholder="Ej: Panetón Don Guido">
+          </label>
+          <label class="form-label">
+            Cantidad (unidades)
+            <input name="cantidad" type="number" inputmode="numeric" min="1" step="1" required placeholder="Ej: 2500">
+          </label>
+          <label class="form-label">
+            Peso por panetón (g)
+            <input name="peso" type="number" inputmode="numeric" min="1" step="1" required placeholder="Ej: 900">
+          </label>
+          <label class="form-label fg-full">
+            Fórmula de Panetón
+            <select name="formula" required>
+              <option value="">Selecciona la fórmula…</option>
+              <option value="Barletta">Barletta</option>
+              <option value="Amore">Amore</option>
+              <option value="Fastpan">Fastpan</option>
+            </select>
+          </label>
+          <div class="form-error-msg" id="errPanel0"></div>
+        </div>
+      </div>
+
+      <!-- Panel 1: Fechas -->
+      <div class="wz-panel" id="panel1">
+        <div class="hint-banner">
+          <svg class="svg-icon" style="color: var(--c-primary); margin-top: 2px;"><use href="#icon-calendar"/></svg>
+          <div>Establece la fecha en que se tomó el pedido y la fecha pactada de entrega final.</div>
+        </div>
+        <div class="form-grid">
+          <label class="form-label fg-full">
+            Fecha de Pedido
+            <input name="fechaPedido" type="date">
+          </label>
+          <label class="form-label fg-full">
+            Fecha de Entrega Comprometida
+            <input name="fechaEntrega" type="date">
+          </label>
+          <div class="form-error-msg" id="errPanel1"></div>
+        </div>
+      </div>
+
+      <!-- Panel 2: Avance -->
+      <div class="wz-panel" id="panel2">
+        <div class="hint-banner">
+          <svg class="svg-icon" style="color: var(--c-primary); margin-top: 2px;"><use href="#icon-check"/></svg>
+          <div>Registra la fecha de cumplimiento de cada etapa legal y técnica. Deja vacío lo que esté pendiente.</div>
+        </div>
+        <div class="form-grid">
+          <label class="form-label fg-full">
+            1. Ampliación de marca (DIGESA)
+            <div class="date-input-group">
+              <input name="ampliacionDigesa" type="date">
+              <button type="button" class="today-tag-btn" data-hoy="ampliacionDigesa">Hoy</button>
+            </div>
+          </label>
+          <label class="form-label fg-full">
+            2. Aprobación del Arte / Empaque
+            <div class="date-input-group">
+              <input name="arteAprobado" type="date">
+              <button type="button" class="today-tag-btn" data-hoy="arteAprobado">Hoy</button>
+            </div>
+          </label>
+          <label class="form-label fg-full">
+            3. Pedido ingresado en Sistema
+            <div class="date-input-group">
+              <input name="pedidoSistema" type="date">
+              <button type="button" class="today-tag-btn" data-hoy="pedidoSistema">Hoy</button>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Panel 3: Estado y Observaciones -->
+      <div class="wz-panel" id="panel3">
+        <div class="hint-banner">
+          <svg class="svg-icon" style="color: var(--c-primary); margin-top: 2px;"><use href="#icon-clock"/></svg>
+          <div>El estado se calcula automáticamente. Úsalo solo si requieres forzar una pausa o entrega.</div>
+        </div>
+        <div class="form-grid">
+          <label class="form-label fg-full">
+            Estado Manual (Opcional)
+            <select name="estadoManual">
+              <option value="">Automático según avance (Recomendado)</option>
+              <option value="En producción">En producción</option>
+              <option value="En pausa">En pausa (espera cliente / insumos)</option>
+              <option value="Entregado">Entregado al cliente</option>
+              <option value="Anulado">Anulado / Cancelado</option>
+            </select>
+          </label>
+          <label class="form-label fg-full">
+            Observaciones y Acuerdos de Venta
+            <textarea name="observaciones" placeholder="Caja especial, bolsas, tipo de pasas, anticipo pagado, etc."></textarea>
+          </label>
+          <div class="form-error-msg" id="errPanel3"></div>
+        </div>
+      </div>
+
+    </form>
+  </div>
+
+  <div class="dlg-footer">
+    <button type="button" class="btn btn-danger" id="btnDelete" hidden>
+      <svg class="svg-icon"><use href="#icon-trash"/></svg>
+      <span>Eliminar</span>
+    </button>
+    <div style="display: flex; gap: 8px; margin-left: auto;">
+      <button type="button" class="btn btn-ghost" id="btnBack">← Atrás</button>
+      <button type="button" class="btn btn-primary" id="btnNext">Siguiente →</button>
+    </div>
+  </div>
+</dialog>
+
+<!-- ==========================================================================
+     MODAL: CONFIGURACIÓN GOOGLE SHEETS
+     ========================================================================== -->
+<dialog id="dlgCfg" aria-modal="true" aria-labelledby="cfgTitle">
+  <div class="dlg-header">
+    <div class="dlg-title-wrap">
+      <svg class="svg-icon" style="color: var(--c-primary);"><use href="#icon-settings"/></svg>
+      <span id="cfgTitle">Configuración de Google Sheets</span>
+    </div>
+    <button type="button" class="dlg-close-btn" id="btnCfgX" aria-label="Cerrar">
+      <svg class="svg-icon"><use href="#icon-x"/></svg>
+    </button>
+  </div>
+
+  <form id="formCfg" style="display: flex; flex-direction: column; overflow: hidden;">
+    <div class="dlg-body">
+      <div class="hint-banner">
+        <svg class="svg-icon" style="color: var(--c-primary); margin-top: 2px;"><use href="#icon-settings"/></svg>
+        <div>Conecta la hoja de cálculo para sincronizar automáticamente los pedidos con la oficina.</div>
+      </div>
+
+      <div class="form-grid">
+        <label class="form-label fg-full">
+          URL del Web App (Apps Script)
+          <input name="url" type="url" placeholder="https://script.google.com/macros/s/…/exec">
+        </label>
+        <label class="form-label fg-full">
+          Token de Seguridad (Contraseña)
+          <input name="token" type="text" autocomplete="off" placeholder="Tu token secreto configurado en Code.gs">
+        </label>
+      </div>
+    </div>
+
+    <div class="dlg-footer">
+      <button type="button" class="btn btn-ghost" id="btnCfgCancel">Cancelar</button>
+      <button type="submit" class="btn btn-primary">Guardar y Sincronizar</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- ==========================================================================
+     CORE JAVASCRIPT APPLICATION
+     ========================================================================== -->
+<script>
+/* ===== CONSTANTS & STORAGE KEYS ===== */
+const LS_DATA  = 'maquila_pedidos_v2';
+const LS_CFG   = 'maquila_cfg_v2';
+const LS_DIRTY = 'maquila_dirty_v2';
+const LS_VIEW  = 'maquila_view_v1';
+const LS_THEME = 'maquila_theme_v1';
+
+const STEPS = [
+  { key: 'ampliacionDigesa', short: 'DIGESA',  label: 'Ampliación DIGESA',      stepNum: '1' },
+  { key: 'arteAprobado',     short: 'Arte',    label: 'Aprobación del arte',    stepNum: '2' },
+  { key: 'pedidoSistema',    short: 'Sistema', label: 'Pedido en sistema',      stepNum: '3' },
+];
+
+const STATUS_META = {
+  'Pendiente':     { cls: 'sb-pendiente',  cardCls: 'status-pendiente' },
+  'En producción': { cls: 'sb-produccion', cardCls: 'status-produccion' },
+  'En pausa':      { cls: 'sb-pausa',      cardCls: 'status-pausa' },
+  'Entregado':     { cls: 'sb-entregado',  cardCls: 'status-entregado' },
+  'Anulado':       { cls: 'sb-anulado',    cardCls: 'status-anulado' },
+};
+
+/* ===== DOM HELPERS ===== */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c =>
+  ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+const load = (k, d) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch { return d; } };
+const uid  = () => 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+function dt(v) {
+  if (!v) return '';
+  const s = String(v).trim();
+  if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0, 10);
+  const d = new Date(v);
+  if (!isNaN(d.getTime())) {
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }
+  return s.slice(0, 10);
+}
+
+function fmt(s) {
+  if (!s) return '—';
+  const str = String(s).trim();
+  // If ISO YYYY-MM-DD
+  const iso = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (iso) return `${iso[3]}/${iso[2]}/${iso[1].slice(-2)}`;
+  // If DD/MM/YYYY
+  const dmy = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})/);
+  if (dmy) return `${dmy[1].padStart(2,'0')}/${dmy[2].padStart(2,'0')}/${dmy[3].slice(-2)}`;
+  // Parse with Date
+  const d = new Date(s);
+  if (!isNaN(d.getTime())) {
+    return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getFullYear()).slice(-2)}`;
+  }
+  return str.slice(0, 10);
+}
+
+function dias(s) {
+  if (!s) return 0;
+  const targetStr = dt(s);
+  const target = new Date(targetStr + 'T00:00:00');
+  const today = new Date(hoy() + 'T00:00:00');
+  return Math.round((target - today) / 864e5);
+}
+
+function hoy() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+/* ===== APP STATE ===== */
+let pedidos = load(LS_DATA, []).map(norm);
+let cfg     = load(LS_CFG, { url:'', token:'' });
+let dirty   = new Set(load(LS_DIRTY, []));
+let activeFilter = 'activos';
+let viewMode = localStorage.getItem(LS_VIEW) || 'cards'; // 'cards' | 'table'
+
+function norm(r) {
+  return {
+    id:               String(r.id || uid()),
+    marca:            String(r.marca ?? ''),
+    cantidad:         Number(r.cantidad) || 0,
+    peso:             Number(r.peso) || 0,
+    formula:          String(r.formula ?? ''),
+    fechaPedido:      dt(r.fechaPedido),
+    fechaEntrega:     dt(r.fechaEntrega),
+    ampliacionDigesa: dt(r.ampliacionDigesa),
+    arteAprobado:     dt(r.arteAprobado),
+    pedidoSistema:    dt(r.pedidoSistema),
+    estadoManual:     String(r.estadoManual ?? ''),
+    observaciones:    String(r.observaciones ?? ''),
+    updatedAt:        Number(r.updatedAt) || 0,
+    deleted:          [true,1,'1','TRUE','true'].includes(r.deleted),
+  };
+}
+
+function persist() {
+  try {
+    localStorage.setItem(LS_DATA, JSON.stringify(pedidos));
+    localStorage.setItem(LS_DIRTY, JSON.stringify([...dirty]));
+  } catch { setStatus('Error al guardar localmente', 'bad'); }
+}
+
+/* ===== BUSINESS LOGIC ===== */
+function estado(p) {
+  if (p.estadoManual) return p.estadoManual;
+  if (p.pedidoSistema) return 'En producción';
+  return 'Pendiente';
+}
+const activo = p => !['Entregado','Anulado'].includes(estado(p));
+
+function getFormulaClass(f) {
+  const m = (f || '').toLowerCase();
+  if (m.includes('barletta')) return 'f-barletta';
+  if (m.includes('amore'))    return 'f-amore';
+  if (m.includes('fastpan'))  return 'f-fastpan';
+  return 'f-other';
+}
+
+function getAvatarStyle(marca, formula) {
+  const cls = getFormulaClass(formula);
+  const char = (marca || '?').trim().charAt(0).toUpperCase();
+  return { char, cls };
+}
+
+/* ===== THEME TOGGLE (LIGHT / DARK) ===== */
+function initTheme() {
+  const saved = localStorage.getItem(LS_THEME);
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const t = saved || (prefersDark ? 'dark' : 'light');
+  applyTheme(t);
+}
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  localStorage.setItem(LS_THEME, theme);
+  const icon = $('#themeIcon use');
+  if (icon) {
+    icon.setAttribute('href', theme === 'dark' ? '#icon-sun' : '#icon-moon');
+  }
+}
+
+$('#btnThemeToggle').addEventListener('click', () => {
+  const current = document.documentElement.getAttribute('data-theme') || 'dark';
+  applyTheme(current === 'dark' ? 'light' : 'dark');
+});
+
+/* ===== VIEW MODE TOGGLE (CARDS / TABLE) ===== */
+function setViewMode(mode) {
+  viewMode = mode;
+  localStorage.setItem(LS_VIEW, mode);
+  $('#btnViewCards').classList.toggle('active', mode === 'cards');
+  $('#btnViewTable').classList.toggle('active', mode === 'table');
+  render();
+}
+$('#btnViewCards').addEventListener('click', () => setViewMode('cards'));
+$('#btnViewTable').addEventListener('click', () => setViewMode('table'));
+
+/* ===== STATUS BAR ===== */
+function setStatus(msg, cls = '') {
+  const el = $('#syncStatus');
+  el.className = 'sync-badge ' + cls;
+  el.querySelector('.sync-text').textContent = msg;
+}
+
+/* ===== MAIN RENDER ===== */
+function render() {
+  const q = ($('#q').value || '').trim().toLowerCase();
+  const t = hoy();
+  const vis = pedidos.filter(p => !p.deleted);
+  const act = vis.filter(activo);
+
+  // Summary KPIs
+  const cnt = s => vis.filter(p => estado(p) === s).length;
+  const late = act.filter(p => p.fechaEntrega && p.fechaEntrega < t).length;
+  const soon = act.filter(p => p.fechaEntrega && dias(p.fechaEntrega) >= 0 && dias(p.fechaEntrega) <= 3).length;
+  const und  = act.reduce((a,p) => a + p.cantidad, 0);
+  const total= vis.filter(p => !['Anulado'].includes(estado(p))).length;
+
+  const chips = [
+    { cls:'', icon:'icon-box', text:`${total} Activos` },
+    { cls:'highlight', icon:'icon-layers', text:`${und.toLocaleString('es-PE')} Unidades` },
+    cnt('En producción') ? { cls:'', icon:'icon-clock', text:`${cnt('En producción')} En producción` } : null,
+    soon ? { cls:'warn', icon:'icon-calendar', text:`${soon} Próximos a vencer` } : null,
+    late ? { cls:'danger', icon:'icon-alert', text:`${late} Atrasado${late>1?'s':''}` } : null,
+  ].filter(Boolean);
+
+  $('#summaryRow').innerHTML = chips.map(c =>
+    `<div class="kpi-chip ${c.cls}">
+      <svg class="svg-icon"><use href="#${c.icon}"/></svg>
+      <span>${c.text}</span>
+    </div>`
+  ).join('');
+
+  // Filter and sort
+  const list = vis.filter(p => {
+    const e = estado(p);
+    if (activeFilter === 'activos' && !activo(p)) return false;
+    if (activeFilter !== 'activos' && activeFilter !== 'todos' && e !== activeFilter) return false;
+    if (q && !(p.marca + ' ' + p.observaciones + ' ' + p.formula).toLowerCase().includes(q)) return false;
+    return true;
+  }).sort((a, b) => {
+    const A = a.fechaEntrega || '9999', B = b.fechaEntrega || '9999';
+    return A < B ? -1 : A > B ? 1 : b.updatedAt - a.updatedAt;
+  });
+
+  // Container
+  const container = $('#mainContainer');
+  if (!list.length) {
+    container.innerHTML = `
+      <div class="empty-box">
+        <div class="empty-icon-wrap">
+          <svg class="svg-icon"><use href="#icon-box"/></svg>
+        </div>
+        <div class="empty-title">${vis.length ? 'Sin pedidos para este filtro' : 'Aún no hay pedidos registrados'}</div>
+        <div class="empty-desc">${vis.length ? 'Prueba cambiando los filtros o la búsqueda.' : 'Presiona el botón naranja + para registrar el primer pedido de maquila.'}</div>
+      </div>
+    `;
+    return;
+  }
+
+  if (viewMode === 'table') {
+    container.innerHTML = renderTable(list);
+  } else {
+    container.innerHTML = `<div class="cards-grid">${list.map(renderCard).join('')}</div>`;
+  }
+}
+
+/* ===== CARDS RENDER ===== */
+function renderCard(p) {
+  const e = estado(p);
+  const sm = STATUS_META[e] || STATUS_META['Pendiente'];
+  const av = getAvatarStyle(p.marca, p.formula);
+  const fCls = getFormulaClass(p.formula);
+
+  // Countdown / Delivery alert
+  let deliveryHtml = '';
+  if (p.fechaEntrega) {
+    const d = dias(p.fechaEntrega);
+    let cdCls = 'cd-normal', cdText = '';
+    if (activo(p)) {
+      if (d < 0)       { cdCls = 'cd-late'; cdText = `Atrasado ${-d} d`; }
+      else if (d === 0){ cdCls = 'cd-today'; cdText = '¡Hoy!'; }
+      else if (d === 1){ cdCls = 'cd-soon'; cdText = 'Mañana'; }
+      else if (d <= 3) { cdCls = 'cd-soon'; cdText = `Faltan ${d} d`; }
+      else             { cdCls = 'cd-normal'; cdText = `En ${d} d`; }
+    }
+    deliveryHtml = `
+      <div class="delivery-row">
+        <span class="delivery-label">
+          <svg class="svg-icon"><use href="#icon-calendar"/></svg>
+          Entrega: ${fmt(p.fechaEntrega)}
+        </span>
+        ${cdText ? `<span class="countdown-tag ${cdCls}">${cdText}</span>` : ''}
+      </div>
+    `;
+  }
+
+  // Connected Progress Pipeline
+  const stepsHtml = STEPS.map(s => {
+    const done = !!p[s.key];
+    return `
+      <button type="button" class="step-item ${done ? 'completed' : ''}" data-step="${s.key}" data-id="${esc(p.id)}" title="${s.label}: clic para marcar/desmarcar">
+        <div class="step-node">
+          ${done ? '<svg class="svg-icon" style="font-size:0.8rem;"><use href="#icon-check"/></svg>' : s.stepNum}
+        </div>
+        <div class="step-name">${s.short}</div>
+        <div class="step-date">${done ? fmt(p[s.key]) : '—'}</div>
+      </button>
+    `;
+  }).join('');
+
+  return `
+    <article class="order-card ${sm.cardCls}" data-id="${esc(p.id)}">
+      <!-- Card Top: Client, Formula & Status -->
+      <div class="card-top">
+        <div class="client-info">
+          <div class="client-avatar ${av.cls}">${av.char}</div>
+          <div class="client-text">
+            <div class="client-name" title="${esc(p.marca)}">${esc(p.marca)}</div>
+            ${p.formula ? `<span class="client-formula ${fCls}">${esc(p.formula)}</span>` : ''}
+          </div>
+        </div>
+        <span class="status-badge ${sm.cls}">
+          <span class="dot"></span>
+          <span>${esc(e)}</span>
+        </span>
+      </div>
+
+      <!-- Metrics strip: Cantidad & Gramaje -->
+      <div class="card-metrics">
+        <span class="metric-item">
+          <svg class="svg-icon"><use href="#icon-box"/></svg>
+          <span class="metric-value">${p.cantidad.toLocaleString('es-PE')}</span> und
+        </span>
+        <span class="metric-sep">•</span>
+        <span class="metric-item">
+          <span class="metric-value">${p.peso}</span> g
+        </span>
+        ${p.fechaPedido ? `
+          <span class="metric-sep">•</span>
+          <span class="metric-item">
+            Ped: <span class="metric-value">${fmt(p.fechaPedido)}</span>
+          </span>
+        ` : ''}
+      </div>
+
+      ${deliveryHtml}
+
+      <!-- Interactive Step Pipeline -->
+      <div class="step-pipeline">
+        ${stepsHtml}
+      </div>
+
+      <!-- Observations note if any -->
+      ${p.observaciones ? `<div class="card-note">${esc(p.observaciones)}</div>` : ''}
+
+      <!-- Card Action Footer -->
+      <div class="card-bottom">
+        <button type="button" class="card-action-btn" data-edit="${esc(p.id)}">
+          <svg class="svg-icon"><use href="#icon-edit"/></svg>
+          <span>Editar</span>
+        </button>
+      </div>
+    </article>
+  `;
+}
+
+/* ===== TABLE RENDER (COMPACT DATA GRID) ===== */
+function renderTable(list) {
+  const rows = list.map(p => {
+    const e = estado(p);
+    const sm = STATUS_META[e] || STATUS_META['Pendiente'];
+    const av = getAvatarStyle(p.marca, p.formula);
+    const fCls = getFormulaClass(p.formula);
+
+    // Delivery column
+    let delivCol = fmt(p.fechaEntrega) || '—';
+    if (p.fechaEntrega && activo(p)) {
+      const d = dias(p.fechaEntrega);
+      if (d < 0) delivCol += ` <span class="countdown-tag cd-late">${-d}d atr</span>`;
+      else if (d === 0) delivCol += ` <span class="countdown-tag cd-today">Hoy</span>`;
+      else if (d <= 3) delivCol += ` <span class="countdown-tag cd-soon">${d}d</span>`;
+    }
+
+    return `
+      <tr class="${sm.cardCls}">
+        <td>
+          <div class="table-client">
+            <div class="table-avatar ${av.cls}">${av.char}</div>
+            <div>
+              <div style="font-weight: 700;">${esc(p.marca)}</div>
+              ${p.formula ? `<span class="client-formula ${fCls}" style="font-size:0.65rem;">${esc(p.formula)}</span>` : ''}
+            </div>
+          </div>
+        </td>
+        <td style="font-weight:700;">${p.cantidad.toLocaleString('es-PE')}</td>
+        <td>${p.peso} g</td>
+        <td>${fmt(p.fechaPedido) || '—'}</td>
+        <td>${delivCol}</td>
+        <td>
+          <button type="button" class="table-toggle-btn ${p.ampliacionDigesa ? 'done' : ''}" data-step="ampliacionDigesa" data-id="${esc(p.id)}">
+            <svg class="svg-icon"><use href="#icon-${p.ampliacionDigesa ? 'check' : 'clock'}"/></svg>
+            ${p.ampliacionDigesa ? fmt(p.ampliacionDigesa) : 'Pend'}
+          </button>
+        </td>
+        <td>
+          <button type="button" class="table-toggle-btn ${p.arteAprobado ? 'done' : ''}" data-step="arteAprobado" data-id="${esc(p.id)}">
+            <svg class="svg-icon"><use href="#icon-${p.arteAprobado ? 'check' : 'clock'}"/></svg>
+            ${p.arteAprobado ? fmt(p.arteAprobado) : 'Pend'}
+          </button>
+        </td>
+        <td>
+          <button type="button" class="table-toggle-btn ${p.pedidoSistema ? 'done' : ''}" data-step="pedidoSistema" data-id="${esc(p.id)}">
+            <svg class="svg-icon"><use href="#icon-${p.pedidoSistema ? 'check' : 'clock'}"/></svg>
+            ${p.pedidoSistema ? fmt(p.pedidoSistema) : 'Pend'}
+          </button>
+        </td>
+        <td>
+          <span class="status-badge ${sm.cls}">
+            <span class="dot"></span>
+            ${esc(e)}
+          </span>
+        </td>
+        <td>
+          <button type="button" class="card-action-btn" data-edit="${esc(p.id)}">
+            <svg class="svg-icon"><use href="#icon-edit"/></svg>
+            <span>Editar</span>
+          </button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  return `
+    <div class="table-wrapper">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Marca / Cliente</th>
+            <th>Cantidad</th>
+            <th>Peso</th>
+            <th>F. Pedido</th>
+            <th>F. Entrega</th>
+            <th>DIGESA</th>
+            <th>Arte</th>
+            <th>Sistema</th>
+            <th>Estado</th>
+            <th>Acción</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+  `;
+}
+
+/* ===== EVENT DELEGATION: CARDS & TABLE ===== */
+$('#mainContainer').addEventListener('click', ev => {
+  // Step quick toggle
+  const st = ev.target.closest('[data-step]');
+  if (st) {
+    const p = pedidos.find(x => x.id === st.dataset.id);
+    const k = st.dataset.step;
+    if (!p) return;
+    if (p[k]) {
+      if (!confirm(`¿Deseas desmarcar la etapa "${STEPS.find(s=>s.key===k)?.label}"?`)) return;
+      p[k] = '';
+    } else {
+      p[k] = hoy();
+    }
+    touch(p);
+    return;
+  }
+
+  // Edit order
+  const ed = ev.target.closest('[data-edit]');
+  if (ed) openWizard(ed.dataset.edit);
+});
+
+/* ===== FILTER PILLS LISTENER ===== */
+$('#filterPills').addEventListener('click', ev => {
+  const pill = ev.target.closest('.pill');
+  if (!pill) return;
+  document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+  pill.classList.add('active');
+  activeFilter = pill.dataset.filter;
+  render();
+});
+
+$('#q').addEventListener('input', render);
+
+/* ===== TOUCH & SYNC TRIGGERS ===== */
+function touch(p) {
+  p.updatedAt = Date.now();
+  dirty.add(p.id);
+  persist();
+  render();
+  scheduleSync();
+}
+
+/* ===== WIZARD CONTROLS ===== */
+const dlgPedido = $('#dlgPedido');
+const formPedido = $('#formPedido');
+let currentPanel = 0;
+const PANELS = 4;
+
+function updateWizardUI() {
+  // Panels
+  document.querySelectorAll('.wz-panel').forEach((p, i) => p.classList.toggle('active', i === currentPanel));
+  // Step Nav Buttons
+  document.querySelectorAll('.wz-step-btn').forEach((s, i) => {
+    s.classList.toggle('active', i === currentPanel);
+    s.classList.toggle('done', i < currentPanel);
+  });
+  // Footer navigation buttons
+  $('#btnBack').textContent = currentPanel === 0 ? '✕ Cancelar' : '← Atrás';
+  $('#btnNext').textContent = currentPanel === PANELS - 1 ? 'Guardar Pedido' : 'Siguiente →';
+}
+
+function openWizard(id) {
+  currentPanel = 0;
+  formPedido.reset();
+  clearErrors();
+
+  const p = id ? pedidos.find(x => x.id === id) : null;
+  $('#dlgTitle').textContent = p ? `Editar Pedido: ${p.marca}` : 'Nuevo Pedido de Maquila';
+  const btnDel = $('#btnDelete');
+  if (p) btnDel.removeAttribute('hidden');
+  else btnDel.setAttribute('hidden', '');
+
+  if (p) {
+    for (const el of formPedido.elements) {
+      if (el.name && el.name in p) el.value = p[el.name] ?? '';
+    }
+  } else {
+    formPedido.elements.fechaPedido.value = hoy();
+  }
+  updateWizardUI();
+  dlgPedido.showModal();
+}
+
+function clearErrors() {
+  document.querySelectorAll('.form-error-msg').forEach(el => {
+    el.textContent = '';
+    el.classList.remove('visible');
+  });
+}
+
+function validatePanel(idx) {
+  clearErrors();
+  if (idx === 0) {
+    const f = formPedido.elements;
+    const errs = [];
+    if (!f.marca.value.trim()) errs.push('marca / cliente');
+    if (!(Number(f.cantidad.value) > 0)) errs.push('cantidad válida');
+    if (!(Number(f.peso.value) > 0)) errs.push('peso');
+    if (!f.formula.value) errs.push('fórmula');
+    if (errs.length) {
+      const el = $('#errPanel0');
+      el.textContent = 'Por favor completa: ' + errs.join(', ');
+      el.classList.add('visible');
+      return false;
+    }
+  }
+  return true;
+}
+
+$('#btnNext').addEventListener('click', () => {
+  if (currentPanel < PANELS - 1) {
+    if (!validatePanel(currentPanel)) return;
+    currentPanel++;
+    updateWizardUI();
+  } else {
+    saveWizard();
+  }
+});
+
+$('#btnBack').addEventListener('click', () => {
+  if (currentPanel > 0) {
+    currentPanel--;
+    updateWizardUI();
+  } else {
+    dlgPedido.close();
+  }
+});
+
+// Step tab buttons in wizard
+document.querySelectorAll('.wz-step-btn').forEach((btn, idx) => {
+  btn.addEventListener('click', () => {
+    if (idx > currentPanel && !validatePanel(currentPanel)) return;
+    currentPanel = idx;
+    updateWizardUI();
+  });
+});
+
+// Close X in wizard
+$('#btnWzClose').addEventListener('click', () => dlgPedido.close());
+
+// "Hoy" quick date buttons
+formPedido.addEventListener('click', ev => {
+  const b = ev.target.closest('.today-tag-btn');
+  if (b) formPedido.elements[b.dataset.hoy].value = hoy();
+});
+
+function saveWizard() {
+  if (!validatePanel(0)) { currentPanel = 0; updateWizardUI(); return; }
+  const f = Object.fromEntries(new FormData(formPedido));
+  // sanitize formula injection
+  f.observaciones = String(f.observaciones ?? '').replace(/^[=+\-@\t\r]+/, '');
+  f.marca = f.marca.trim();
+
+  let p = f.id ? pedidos.find(x => x.id === f.id) : null;
+  if (!p) { p = norm({ id: uid() }); pedidos.push(p); }
+  Object.assign(p, norm({ ...p, ...f, id: p.id }));
+  touch(p);
+  dlgPedido.close();
+}
+
+$('#btnDelete').addEventListener('click', () => {
+  const p = pedidos.find(x => x.id === formPedido.elements.id.value);
+  if (!p) return;
+  if (!confirm(`¿Eliminar el pedido de "${p.marca}"?\n\nConsejo: Si el cliente canceló el pedido, es mejor marcarlo como "Anulado" para mantener el historial.`)) return;
+  p.deleted = true;
+  touch(p);
+  dlgPedido.close();
+});
+
+dlgPedido.addEventListener('click', ev => { if (ev.target === dlgPedido) dlgPedido.close(); });
+$('#btnNew').addEventListener('click', () => openWizard(null));
+
+/* ===== CONFIG DIALOG (SHEETS) ===== */
+const dlgCfg = $('#dlgCfg');
+const formCfg = $('#formCfg');
+
+$('#btnCfg').addEventListener('click', () => {
+  formCfg.elements.url.value = cfg.url;
+  formCfg.elements.token.value = cfg.token;
+  if (dlgPedido.open) dlgPedido.close();
+  dlgCfg.showModal();
+});
+$('#btnCfgCancel').addEventListener('click', () => dlgCfg.close());
+$('#btnCfgX').addEventListener('click', () => dlgCfg.close());
+dlgCfg.addEventListener('click', ev => { if (ev.target === dlgCfg) dlgCfg.close(); });
+
+formCfg.addEventListener('submit', ev => {
+  ev.preventDefault();
+  cfg = { url: formCfg.elements.url.value.trim(), token: formCfg.elements.token.value.trim() };
+  try { localStorage.setItem(LS_CFG, JSON.stringify(cfg)); } catch {}
+  dlgCfg.close();
+  sync();
+});
+
+/* ===== GOOGLE SHEETS SYNC ===== */
+let syncing = false, syncTimer = null;
+function scheduleSync() { clearTimeout(syncTimer); syncTimer = setTimeout(sync, 800); }
+
+async function sync() {
+  if (!cfg.url || !cfg.token) {
+    setStatus(dirty.size ? `Local (${dirty.size} pendientes)` : 'Datos guardados localmente', 'warn');
+    return;
+  }
+  if (syncing) { scheduleSync(); return; }
+  syncing = true;
+  setStatus('Sincronizando…');
+  const btnSync = $('#btnSync');
+  btnSync.classList.add('spinning');
+
+  const toSend = pedidos.filter(p => dirty.has(p.id));
+  const sentMap = new Map(toSend.map(p => [p.id, p.updatedAt]));
+  try {
+    const res = await fetch(cfg.url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ token: cfg.token, records: toSend }),
+    });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || 'Error en Google Sheets');
+
+    sentMap.forEach((u, id) => {
+      const p = pedidos.find(x => x.id === id);
+      if (p && p.updatedAt === u) dirty.delete(id);
+    });
+
+    const map = new Map(data.records.map(r => [String(r.id), norm(r)]));
+    pedidos.forEach(p => { if (dirty.has(p.id)) map.set(p.id, p); });
+    pedidos = [...map.values()];
+    persist();
+    render();
+    const h = new Date().toLocaleTimeString('es-PE', { hour:'2-digit', minute:'2-digit' });
+    setStatus(`Sincronizado ${h}`, 'ok');
+  } catch(e) {
+    setStatus(
+      e.message === 'token'
+        ? 'Token incorrecto (revisa ⚙)'
+        : `Sin conexión · ${dirty.size} guardados local`,
+      'warn'
+    );
+  } finally {
+    syncing = false;
+    btnSync.classList.remove('spinning');
+  }
+}
+
+$('#btnSync').addEventListener('click', sync);
+window.addEventListener('online', sync);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) sync(); });
+setInterval(() => { if (!document.hidden) sync(); }, 120_000);
+
+/* ===== SERVICE WORKER ===== */
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(() => {});
+}
+
+/* ===== INIT APP ===== */
+initTheme();
+setViewMode(viewMode);
+sync();
+</script>
+</body>
+</html>
