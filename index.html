@@ -6,6 +6,15 @@
 <meta name="theme-color" content="#ea580c">
 <meta name="description" content="Control de pedidos de maquila de panetones personalizados">
 <title>Control de Maquila · Ventas</title>
+<script>
+/* Aplica el tema antes del primer pintado (evita el destello oscuro) */
+(function () {
+  var t = null;
+  try { t = localStorage.getItem('maquila_theme_v1'); } catch (e) {}
+  if (!t) t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  document.documentElement.setAttribute('data-theme', t);
+})();
+</script>
 <link rel="manifest" href="manifest.json">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -101,7 +110,7 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html {
   scroll-behavior: smooth;
-  overflow-x: hidden;
+  overflow-x: clip; /* 'hidden' rompía el position:sticky del header */
   max-width: 100vw;
   width: 100%;
 }
@@ -111,7 +120,7 @@ body {
   color: var(--txt-main);
   min-height: 100dvh;
   padding-bottom: calc(90px + env(safe-area-inset-bottom, 0px));
-  overflow-x: hidden;
+  overflow-x: clip;
   max-width: 100vw;
   width: 100%;
   -webkit-font-smoothing: antialiased;
@@ -127,6 +136,8 @@ body::before {
   pointer-events: none;
   z-index: 0;
 }
+
+[hidden] { display: none !important; }
 
 /* Standard SVG icon utility */
 .svg-icon {
@@ -790,6 +801,17 @@ main {
   display: flex;
   align-items: center;
   gap: 8px;
+  max-width: 220px;
+}
+.table-client > div:last-child { min-width: 0; }
+.table-name {
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+@media (max-width: 640px) {
+  .table-client { max-width: 150px; }
 }
 .table-avatar {
   width: 26px;
@@ -1447,6 +1469,8 @@ const STATUS_META = {
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c =>
   ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+const lsGet = k => { try { return localStorage.getItem(k); } catch { return null; } };
+const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch {} };
 const load = (k, d) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch { return d; } };
 const uid  = () => 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 function dt(v) {
@@ -1495,7 +1519,7 @@ let pedidos = load(LS_DATA, []).map(norm);
 let cfg     = load(LS_CFG, { url:'', token:'' });
 let dirty   = new Set(load(LS_DIRTY, []));
 let activeFilter = 'activos';
-let viewMode = localStorage.getItem(LS_VIEW) || 'cards'; // 'cards' | 'table'
+let viewMode = lsGet(LS_VIEW) || 'cards'; // 'cards' | 'table'
 
 function norm(r) {
   return {
@@ -1547,7 +1571,7 @@ function getAvatarStyle(marca, formula) {
 
 /* ===== THEME TOGGLE (LIGHT / DARK) ===== */
 function initTheme() {
-  const saved = localStorage.getItem(LS_THEME);
+  const saved = lsGet(LS_THEME);
   const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
   const t = saved || (prefersDark ? 'dark' : 'light');
   applyTheme(t);
@@ -1555,7 +1579,9 @@ function initTheme() {
 
 function applyTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme);
-  localStorage.setItem(LS_THEME, theme);
+  lsSet(LS_THEME, theme);
+  const mt = document.querySelector('meta[name=theme-color]');
+  if (mt) mt.content = theme === 'dark' ? '#0c0a09' : '#f8f6f2';
   const icon = $('#themeIcon use');
   if (icon) {
     icon.setAttribute('href', theme === 'dark' ? '#icon-sun' : '#icon-moon');
@@ -1570,7 +1596,7 @@ $('#btnThemeToggle').addEventListener('click', () => {
 /* ===== VIEW MODE TOGGLE (CARDS / TABLE) ===== */
 function setViewMode(mode) {
   viewMode = mode;
-  localStorage.setItem(LS_VIEW, mode);
+  lsSet(LS_VIEW, mode);
   $('#btnViewCards').classList.toggle('active', mode === 'cards');
   $('#btnViewTable').classList.toggle('active', mode === 'table');
   render();
@@ -1597,10 +1623,9 @@ function render() {
   const late = act.filter(p => p.fechaEntrega && p.fechaEntrega < t).length;
   const soon = act.filter(p => p.fechaEntrega && dias(p.fechaEntrega) >= 0 && dias(p.fechaEntrega) <= 3).length;
   const und  = act.reduce((a,p) => a + p.cantidad, 0);
-  const total= vis.filter(p => !['Anulado'].includes(estado(p))).length;
 
   const chips = [
-    { cls:'', icon:'icon-box', text:`${total} Activos` },
+    { cls:'', icon:'icon-box', text:`${act.length} Activos` },
     { cls:'highlight', icon:'icon-layers', text:`${und.toLocaleString('es-PE')} Unidades` },
     cnt('En producción') ? { cls:'', icon:'icon-clock', text:`${cnt('En producción')} En producción` } : null,
     soon ? { cls:'warn', icon:'icon-calendar', text:`${soon} Próximos a vencer` } : null,
@@ -1771,7 +1796,7 @@ function renderTable(list) {
           <div class="table-client">
             <div class="table-avatar ${av.cls}">${av.char}</div>
             <div>
-              <div style="font-weight: 700;">${esc(p.marca)}</div>
+              <div class="table-name" title="${esc(p.marca)}">${esc(p.marca)}</div>
               ${p.formula ? `<span class="client-formula ${fCls}" style="font-size:0.65rem;">${esc(p.formula)}</span>` : ''}
             </div>
           </div>
@@ -2008,7 +2033,7 @@ $('#btnDelete').addEventListener('click', () => {
   dlgPedido.close();
 });
 
-dlgPedido.addEventListener('click', ev => { if (ev.target === dlgPedido) dlgPedido.close(); });
+// El wizard no se cierra al tocar fuera: evita perder lo escrito (Esc o ✕ sí lo cierran).
 $('#btnNew').addEventListener('click', () => openWizard(null));
 
 /* ===== CONFIG DIALOG (SHEETS) ===== */
