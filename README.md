@@ -66,6 +66,22 @@ Aplicación Web Progresiva (PWA) moderna, responsiva y offline-first diseñada p
 
 ---
 
+## 👥 Varios vendedores a la vez
+
+Cada campo de un pedido (marca, cantidad, peso, fórmula, fechas, etapas, estado, observaciones y «eliminado») guarda **la fecha de su última edición**. Al sincronizar, la app y la hoja combinan cada pedido **campo por campo**:
+
+- **Campos distintos** (uno cambia la cantidad y otro la fecha de entrega, o marcan etapas diferentes): se conservan **los dos** cambios.
+- **El mismo campo**: gana la edición **más reciente**, aunque haya llegado antes a la hoja o se hiciera sin conexión.
+- **Formulario abierto**: al guardar solo se aplican los campos que **tú** cambiaste; lo que otro vendedor modificó mientras tanto no se pisa con valores viejos.
+- **Editar una celda a mano en Google Sheets** también cuenta: un disparador `onEdit` (se activa solo, sin instalar nada) sella la fecha de esa celda. Si la fecha coincide con la de la app, gana la hoja.
+- **Eliminar** es un campo más: si alguien elimina un pedido mientras otro edita otro campo, el pedido queda eliminado y la edición se conserva.
+
+**Para activarlo en una hoja ya instalada:** pega el nuevo `Code.gs`, **crea una nueva versión** de la implementación (Implementar ➔ Administrar implementaciones ➔ Editar ➔ Nueva versión). La columna `fieldTs` se agrega sola al encabezado y las filas antiguas siguen funcionando (parten de su fecha `updatedAt`). Mientras la hoja use el `Code.gs` anterior, la app funciona como antes (gana el pedido completo más reciente).
+
+**Limitaciones conocidas:** «más reciente» se decide con el reloj de cada dispositivo (y el de Google para ediciones manuales); un teléfono con la hora muy adelantada ganaría conflictos que no debería. Mantén la fecha y hora en automático. Dos ediciones del mismo campo en el mismo milisegundo no se consideran conflicto realista.
+
+---
+
 ## 📲 PWA y despliegue
 
 - **Actualizaciones:** el HTML se pide primero a la red (con revalidación), así que cada despliegue se ve en la **primera** carga con conexión. Sin conexión, o si la red tarda más de 4 s, se usa la última copia guardada y la descarga termina en segundo plano para la siguiente carga.

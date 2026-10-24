@@ -1556,6 +1556,12 @@ const STEPS = [
   { key: 'pedidoSistema',    short: 'Sistema', label: 'Pedido en sistema',      stepNum: '3' },
 ];
 
+/* Campos que se fusionan de forma independiente entre dispositivos. Cada uno lleva su propia
+   fecha de última edición (fts), así dos vendedores que cambian campos distintos del mismo
+   pedido no se pisan. Misma lista y misma regla en Code.gs. */
+const FIELDS = ['marca','cantidad','peso','formula','fechaPedido','fechaEntrega',
+                'ampliacionDigesa','arteAprobado','pedidoSistema','estadoManual','observaciones','deleted'];
+
 const STATUS_META = {
   'Pendiente':     { cls: 'sb-pendiente',  cardCls: 'status-pendiente' },
   'En producción': { cls: 'sb-produccion', cardCls: 'status-produccion' },
@@ -1620,8 +1626,18 @@ let dirty   = new Set(load(LS_DIRTY, []));
 let activeFilter = 'activos';
 let viewMode = lsGet(LS_VIEW) || 'cards'; // 'cards' | 'table'
 
+// Fechas por campo. Registros antiguos (sin fieldTs): todos los campos valen su updatedAt.
+function parseFts(r) {
+  let o = r.fts;
+  if (!o && typeof r.fieldTs === 'string' && r.fieldTs) { try { o = JSON.parse(r.fieldTs); } catch { o = null; } }
+  const base = Number(r.updatedAt) || 0, out = {};
+  FIELDS.forEach(f => { const v = Number(o && o[f]); out[f] = v > 0 ? v : base; });
+  return out;
+}
+
 function norm(r) {
   return {
+    fts:              parseFts(r),
     id:               String(r.id || uid()),
     marca:            String(r.marca ?? ''),
     cantidad:         Number(r.cantidad) || 0,
@@ -1637,6 +1653,34 @@ function norm(r) {
     updatedAt:        Number(r.updatedAt) || 0,
     deleted:          [true,1,'1','TRUE','true'].includes(r.deleted),
   };
+}
+
+/* Fusión por campo: para cada campo gana la edición más reciente. `a` = copia local, `b` = hoja.
+   Si la fecha es la misma pero el valor difiere (típico: alguien editó una celda a mano en la
+   hoja), gana la hoja, que es la fuente de verdad. Misma regla en Code.gs (mergeRec_). */
+function mergeRec(a, b) {
+  const out = { ...a, fts: {} };
+  FIELDS.forEach(f => {
+    const ta = a.fts[f], tb = b.fts[f];
+    const pickB = tb >= ta;
+    out[f] = pickB ? b[f] : a[f];
+    out.fts[f] = Math.max(ta, tb);
+  });
+  out.updatedAt = Math.max(a.updatedAt, b.updatedAt, ...Object.values(out.fts));
+  return out;
+}
+const sameRec = (a, b) => FIELDS.every(f => String(a[f]) === String(b[f]) && a.fts[f] === b.fts[f]);
+
+/* Aplica solo los campos que realmente cambian y les pone fecha de edición propia. */
+function setFields(p, changes) {
+  const now = Math.max(Date.now(), p.updatedAt + 1);
+  const next = norm({ ...p, ...changes });            // normaliza tipos (número, fecha, booleano)
+  let n = 0;
+  for (const k of Object.keys(changes)) {
+    if (!FIELDS.includes(k)) continue;
+    if (String(next[k]) !== String(p[k])) { p[k] = next[k]; p.fts[k] = now; n++; }
+  }
+  return n;
 }
 
 function persist() {
@@ -2002,7 +2046,7 @@ function showToast(msg, undo) {
 function undoField(id, key, prev) {
   const p = pedidos.find(x => x.id === id);
   if (!p) return;
-  p[key] = prev;
+  setFields(p, { [key]: prev });
   touch(p);
 }
 
@@ -2016,7 +2060,7 @@ $('#mainContainer').addEventListener('click', ev => {
     if (!p) return;
     const label = STEPS.find(s => s.key === k)?.label || k;
     const prev = p[k];
-    p[k] = prev ? '' : hoy();
+    setFields(p, { [k]: prev ? '' : hoy() });
     touch(p);
     // render() recrea el botón: devuelve el foco para quien navega con teclado
     document.querySelector(`[data-step="${k}"][data-id="${CSS.escape(id)}"]`)?.focus({ preventScroll: true });
@@ -2044,7 +2088,7 @@ $('#q').addEventListener('input', render);
 
 /* ===== TOUCH & SYNC TRIGGERS ===== */
 function touch(p) {
-  p.updatedAt = Date.now();
+  p.updatedAt = Math.max(Date.now(), p.updatedAt + 1, ...Object.values(p.fts));
   dirty.add(p.id);
   persist();
   render();
@@ -2055,6 +2099,7 @@ function touch(p) {
 const dlgPedido  = $('#dlgPedido');
 const formPedido = $('#formPedido');
 const dlgBar     = $('#dlgBar');
+let openVals = {};        // valores del formulario al abrirlo: base para saber qué campos cambió la persona
 let snapshot = '';        // estado del formulario al abrir, para detectar cambios sin guardar
 let barAction = null;     // acción de confirmación del aviso inline
 
@@ -2106,6 +2151,7 @@ function openPedido(id) {
   }
   updateEstadoPreview();
   snapshot = formState();
+  openVals = Object.fromEntries(new FormData(formPedido));
   dlgPedido.showModal();
   dlgPedido.querySelector('.dlg-body').scrollTop = 0;
   if (!p) formPedido.elements.marca.focus({ preventScroll: true });
@@ -2155,8 +2201,16 @@ function savePedido() {
   f.marca = noFormula(f.marca.trim());
 
   let p = f.id ? pedidos.find(x => x.id === f.id) : null;
-  if (!p) { p = norm({ id: uid() }); pedidos.push(p); }
-  Object.assign(p, norm({ ...p, ...f, id: p.id }));
+  const isNew = !p;
+  if (isNew) { p = norm({ id: f.id || uid() }); pedidos.push(p); }
+  /* Solo se aplican los campos que la persona cambió en este formulario. Los demás conservan el
+     valor actual del pedido, que puede haber llegado de otro dispositivo mientras estaba abierto. */
+  const changes = {};
+  FIELDS.forEach(k => {
+    if (!(k in f)) return;
+    if (isNew || String(f[k]) !== String(openVals[k] ?? '')) changes[k] = f[k];
+  });
+  setFields(p, changes);
   touch(p);
   dlgPedido.close();
 }
@@ -2205,7 +2259,7 @@ $('#btnDelete').addEventListener('click', () => {
     cancel: 'Cancelar', confirm: 'Eliminar',
     action: () => {
       const id = p.id, nombre = p.marca;
-      p.deleted = true; touch(p); dlgPedido.close();
+      setFields(p, { deleted: true }); touch(p); dlgPedido.close();
       showToast(`Pedido de "${nombre}" eliminado`, () => undoField(id, 'deleted', false));
     },
   });
@@ -2264,7 +2318,7 @@ async function sync() {
     const res = await fetch(cfg.url, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ token: cfg.token, records: toSend }),
+      body: JSON.stringify({ token: cfg.token, records: toSend.map(p => ({ ...p, fts: undefined, fieldTs: JSON.stringify(p.fts) })) }),
     });
     const data = await res.json();
     if (!data.ok) throw new Error(data.error || 'Error en Google Sheets');
@@ -2277,13 +2331,15 @@ async function sync() {
 
     /* Fusión que NUNCA descarta datos locales: lo que la hoja no tenga (hoja nueva, vacía,
        borrada o restaurada a una versión antigua) se conserva y se vuelve a enviar. */
-    const merged = new Map(data.records.map(r => { const n = norm(r); return [n.id, n]; }));
+    const remoteMap = new Map(data.records.map(r => { const n = norm(r); return [n.id, n]; }));
+    const merged = new Map(remoteMap);
     const resend = [];
     pedidos.forEach(p => {
-      const remote = merged.get(p.id);
-      if (!remote) { merged.set(p.id, p); resend.push(p.id); }                       // la hoja no lo tiene
-      else if (dirty.has(p.id)) merged.set(p.id, p);                                 // editado mientras se enviaba
-      else if (p.updatedAt > remote.updatedAt) { merged.set(p.id, p); resend.push(p.id); } // la hoja tiene algo más antiguo
+      const remote = remoteMap.get(p.id);
+      if (!remote) { merged.set(p.id, p); resend.push(p.id); return; }   // la hoja no lo tiene
+      const m = mergeRec(p, remote);                                     // campo por campo: gana lo más reciente
+      merged.set(p.id, m);
+      if (!sameRec(m, remote)) resend.push(p.id);                        // el equipo aporta algo que la hoja no tiene
     });
     pedidos = [...merged.values()];
 
