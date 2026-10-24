@@ -15,6 +15,7 @@ Aplicación Web Progresiva (PWA) moderna, responsiva y offline-first diseñada p
   2. **Arte:** Aprobación de empaque y diseño.
   3. **Sistema:** Ingreso formal a producción.
   - Se marcan con un solo toque y calculan automáticamente el estado del pedido.
+- **Formulario de pedido en una pantalla:** secciones Pedido · Fechas · Avance · Estado y notas. En móvil se abre como *bottom sheet*; en escritorio, como modal centrado. Valida por campo (con mensajes claros y foco en el primer error), guarda con Enter, muestra el estado resultante en vivo y avisa antes de descartar cambios o eliminar (sin diálogos nativos del navegador).
 - **Alertas Inteligentes de Entrega:** Cálculo de días restantes (`¡Hoy!`, `Mañana`, `Faltan X d`, `Atrasado X d`).
 - **Selector de Tema:** Modo Oscuro (Obsidian & Ember) y Modo Claro (Artisan Cream). Todo el texto cumple contraste WCAG AA (≥ 4.5:1), verificado con un escaneo automático de los textos renderizados en ambos temas.
 - **PWA Instalable:** Funciona sin conexión a internet gracias a Service Worker y persistencia en `localStorage`.

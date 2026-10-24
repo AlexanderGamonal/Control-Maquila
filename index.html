@@ -947,6 +947,24 @@ dialog::backdrop {
   backdrop-filter: blur(4px);
 }
 
+/* Bottom sheet en móvil: el formulario de pedido sube desde abajo */
+@media (max-width: 640px) {
+  #dlgPedido {
+    width: 100%; max-width: 100%;
+    margin: auto 0 0 0;
+    border-radius: var(--r-xl) var(--r-xl) 0 0;
+    max-height: 94dvh;
+  }
+  #dlgPedido[open] { animation: sheetIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) both; }
+  #dlgPedido .dlg-header { position: relative; padding-top: 22px; }
+  #dlgPedido .dlg-header::before {   /* asa del sheet */
+    content: ''; position: absolute; top: 8px; left: 50%; width: 38px; height: 4px;
+    margin-left: -19px; border-radius: 4px; background: var(--border-strong);
+  }
+  #dlgPedido .dlg-footer { padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px)); }
+}
+@keyframes sheetIn { from { transform: translateY(100%); } to { transform: none; } }
+
 /* Modal Inner Structure */
 .dlg-header {
   padding: 18px 20px 14px;
@@ -960,6 +978,7 @@ dialog::backdrop {
   display: flex;
   align-items: center;
   gap: 8px;
+  min-width: 0;
   font-size: 1.05rem;
   font-weight: 700;
   color: var(--txt-main);
@@ -978,50 +997,11 @@ dialog::backdrop {
 }
 .dlg-close-btn:hover { color: var(--txt-main); background: var(--bg-surface-subtle); }
 
-.dlg-steps-nav {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  background: var(--bg-surface-subtle);
-  border-bottom: 1px solid var(--border);
-  flex-shrink: 0;
-}
-.wz-step-btn {
-  padding: 9px 4px;
-  border: none;
-  background: transparent;
-  color: var(--txt-muted);
-  font-family: inherit;
-  font-size: 0.75rem;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  transition: var(--transition);
-  border-bottom: 2px solid transparent;
-}
-.wz-step-btn.active {
-  color: var(--c-primary-text);
-  border-bottom-color: var(--c-primary);
-  background: var(--bg-surface);
-}
-.wz-step-btn.done {
-  color: var(--st-entregado);
-}
-
 .dlg-body {
   padding: 16px 20px;
   overflow-y: auto;
   flex: 1;
 }
-.wz-panel { display: none; }
-.wz-panel.active { display: block; animation: panelFade 0.2s ease both; }
-@keyframes panelFade {
-  from { opacity: 0; transform: translateX(6px); }
-  to { opacity: 1; transform: translateX(0); }
-}
-
 /* Forms & Inputs */
 .form-grid {
   display: grid;
@@ -1115,17 +1095,30 @@ textarea { resize: vertical; min-height: 72px; }
   align-items: flex-start;
   gap: 8px;
 }
-.form-error-msg {
-  grid-column: 1 / -1;
-  font-size: 0.76rem;
-  color: var(--st-anulado);
-  background: var(--st-anulado-bg);
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  border-radius: var(--r-sm);
-  padding: 8px 12px;
-  display: none;
+/* ---- Formulario de pedido: secciones, errores por campo, aviso inline ---- */
+.form-section { padding-bottom: 18px; margin-bottom: 18px; border-bottom: 1px solid var(--border); }
+.form-section:last-of-type { border-bottom: 0; margin-bottom: 0; padding-bottom: 4px; }
+.section-title {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--txt-muted); margin-bottom: 12px;
 }
-.form-error-msg.visible { display: block; }
+.section-title .svg-icon { color: var(--c-primary-text); }
+.field-error { display: none; font-size: 0.78rem; font-weight: 600; color: var(--st-anulado); }
+.field-error.visible { display: block; }
+input[aria-invalid="true"], select[aria-invalid="true"] { border-color: var(--st-anulado); }
+.estado-preview { font-size: 0.78rem; color: var(--txt-muted); margin-top: -2px; }
+.estado-preview strong { color: var(--txt-main); }
+.danger-zone { margin-top: 18px; padding-top: 14px; border-top: 1px dashed var(--border-strong); }
+.dlg-bar {
+  flex-shrink: 0; padding: 12px 20px; display: flex; flex-direction: column; gap: 10px;
+  background: var(--c-amber-light); border-top: 1px solid rgba(217, 119, 6, 0.35);
+}
+.dlg-bar p { font-size: 0.84rem; line-height: 1.4; color: var(--txt-main); }
+.dlg-bar-actions { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
+.dlg-bar .btn-confirm { background: #b91c1c; color: #fff; }
+.dlg-bar .btn-confirm:hover { background: #991b1b; }
+@media (max-width: 480px) { .fg-dates { grid-template-columns: 1fr; } }
 
 /* Modal Footer */
 .dlg-footer {
@@ -1331,35 +1324,16 @@ header.compact .header-main-row { display: none; }
 </button>
 
 <!-- ==========================================================================
-     MODAL: NUEVO / EDITAR PEDIDO (WIZARD)
+     MODAL: NUEVO / EDITAR PEDIDO (formulario de una pantalla; bottom sheet en móvil)
      ========================================================================== -->
 <dialog id="dlgPedido" aria-modal="true" aria-labelledby="dlgTitle">
   <div class="dlg-header">
     <div class="dlg-title-wrap">
-      <svg class="svg-icon" style="color: var(--c-primary);"><use href="#icon-box"/></svg>
-      <span id="dlgTitle">Nuevo Pedido</span>
+      <svg class="svg-icon" style="color: var(--c-primary-text);"><use href="#icon-box"/></svg>
+      <span id="dlgTitle">Nuevo pedido</span>
     </div>
-    <button type="button" class="dlg-close-btn" id="btnWzClose" aria-label="Cerrar">
+    <button type="button" class="dlg-close-btn" id="btnPedidoClose" aria-label="Cerrar">
       <svg class="svg-icon"><use href="#icon-x"/></svg>
-    </button>
-  </div>
-
-  <div class="dlg-steps-nav" id="wzNav">
-    <button type="button" class="wz-step-btn active" data-panel="0">
-      <svg class="svg-icon"><use href="#icon-box"/></svg>
-      <span>1. Datos</span>
-    </button>
-    <button type="button" class="wz-step-btn" data-panel="1">
-      <svg class="svg-icon"><use href="#icon-calendar"/></svg>
-      <span>2. Fechas</span>
-    </button>
-    <button type="button" class="wz-step-btn" data-panel="2">
-      <svg class="svg-icon"><use href="#icon-check"/></svg>
-      <span>3. Avance</span>
-    </button>
-    <button type="button" class="wz-step-btn" data-panel="3">
-      <svg class="svg-icon"><use href="#icon-clock"/></svg>
-      <span>4. Estado</span>
     </button>
   </div>
 
@@ -1367,125 +1341,128 @@ header.compact .header-main-row { display: none; }
     <form id="formPedido" novalidate>
       <input type="hidden" name="id">
 
-      <!-- Panel 0: Datos del Pedido -->
-      <div class="wz-panel active" id="panel0">
-        <div class="hint-banner">
-          <svg class="svg-icon" style="color: var(--c-primary); margin-top: 2px;"><use href="#icon-box"/></svg>
-          <div>Ingresa la marca o cliente, el volumen acordado y la fórmula de panetón solicitada.</div>
-        </div>
+      <!-- Pedido -->
+      <section class="form-section" aria-labelledby="secPedido">
+        <h3 class="section-title" id="secPedido"><svg class="svg-icon"><use href="#icon-box"/></svg>Pedido</h3>
         <div class="form-grid">
           <label class="form-label fg-full">
             Marca / Cliente
-            <input name="marca" type="text" required autocomplete="off" placeholder="Ej: Panetón Don Guido">
+            <input name="marca" type="text" required autocomplete="off" placeholder="Ej: Panetón Don Guido" aria-describedby="err-marca">
+            <span class="field-error" id="err-marca" role="alert"></span>
           </label>
           <label class="form-label">
             Cantidad (unidades)
-            <input name="cantidad" type="number" inputmode="numeric" min="1" step="1" required placeholder="Ej: 2500">
+            <input name="cantidad" type="number" inputmode="numeric" min="1" step="1" required placeholder="Ej: 2500" aria-describedby="err-cantidad">
+            <span class="field-error" id="err-cantidad" role="alert"></span>
           </label>
           <label class="form-label">
             Peso por panetón (g)
-            <input name="peso" type="number" inputmode="numeric" min="1" step="1" required placeholder="Ej: 900">
+            <input name="peso" type="number" inputmode="numeric" min="1" step="1" required placeholder="Ej: 900" aria-describedby="err-peso">
+            <span class="field-error" id="err-peso" role="alert"></span>
           </label>
           <label class="form-label fg-full">
-            Fórmula de Panetón
-            <select name="formula" required>
+            Fórmula de panetón
+            <select name="formula" required aria-describedby="err-formula">
               <option value="">Selecciona la fórmula…</option>
               <option value="Barletta">Barletta</option>
               <option value="Amore">Amore</option>
               <option value="Fastpan">Fastpan</option>
             </select>
+            <span class="field-error" id="err-formula" role="alert"></span>
           </label>
-          <div class="form-error-msg" role="alert" id="errPanel0"></div>
         </div>
-      </div>
+      </section>
 
-      <!-- Panel 1: Fechas -->
-      <div class="wz-panel" id="panel1">
-        <div class="hint-banner">
-          <svg class="svg-icon" style="color: var(--c-primary); margin-top: 2px;"><use href="#icon-calendar"/></svg>
-          <div>Establece la fecha en que se tomó el pedido y la fecha pactada de entrega final.</div>
-        </div>
-        <div class="form-grid">
-          <label class="form-label fg-full">
-            Fecha de Pedido
+      <!-- Fechas -->
+      <section class="form-section" aria-labelledby="secFechas">
+        <h3 class="section-title" id="secFechas"><svg class="svg-icon"><use href="#icon-calendar"/></svg>Fechas</h3>
+        <div class="form-grid fg-dates">
+          <label class="form-label">
+            Fecha de pedido
             <input name="fechaPedido" type="date">
           </label>
-          <label class="form-label fg-full">
-            Fecha de Entrega Comprometida
-            <input name="fechaEntrega" type="date">
+          <label class="form-label">
+            Entrega comprometida
+            <input name="fechaEntrega" type="date" aria-describedby="err-fechaEntrega">
+            <span class="field-error" id="err-fechaEntrega" role="alert"></span>
           </label>
-          <div class="form-error-msg" role="alert" id="errPanel1"></div>
         </div>
-      </div>
+      </section>
 
-      <!-- Panel 2: Avance -->
-      <div class="wz-panel" id="panel2">
-        <div class="hint-banner">
-          <svg class="svg-icon" style="color: var(--c-primary); margin-top: 2px;"><use href="#icon-check"/></svg>
-          <div>Registra la fecha de cumplimiento de cada etapa legal y técnica. Deja vacío lo que esté pendiente.</div>
-        </div>
+      <!-- Avance -->
+      <section class="form-section" aria-labelledby="secAvance">
+        <h3 class="section-title" id="secAvance"><svg class="svg-icon"><use href="#icon-check"/></svg>Avance</h3>
         <div class="form-grid">
           <label class="form-label fg-full">
             1. Ampliación de marca (DIGESA)
             <div class="date-input-group">
               <input name="ampliacionDigesa" type="date">
               <button type="button" class="today-tag-btn" data-hoy="ampliacionDigesa">Hoy</button>
+              <button type="button" class="today-tag-btn" data-limpiar="ampliacionDigesa" aria-label="Quitar fecha de DIGESA"><svg class="svg-icon"><use href="#icon-x"/></svg></button>
             </div>
           </label>
           <label class="form-label fg-full">
-            2. Aprobación del Arte / Empaque
+            2. Aprobación del arte / empaque
             <div class="date-input-group">
               <input name="arteAprobado" type="date">
               <button type="button" class="today-tag-btn" data-hoy="arteAprobado">Hoy</button>
+              <button type="button" class="today-tag-btn" data-limpiar="arteAprobado" aria-label="Quitar fecha de aprobación del arte"><svg class="svg-icon"><use href="#icon-x"/></svg></button>
             </div>
           </label>
           <label class="form-label fg-full">
-            3. Pedido ingresado en Sistema
+            3. Pedido ingresado en sistema
             <div class="date-input-group">
               <input name="pedidoSistema" type="date">
               <button type="button" class="today-tag-btn" data-hoy="pedidoSistema">Hoy</button>
+              <button type="button" class="today-tag-btn" data-limpiar="pedidoSistema" aria-label="Quitar fecha de ingreso al sistema"><svg class="svg-icon"><use href="#icon-x"/></svg></button>
             </div>
           </label>
         </div>
-      </div>
+      </section>
 
-      <!-- Panel 3: Estado y Observaciones -->
-      <div class="wz-panel" id="panel3">
-        <div class="hint-banner">
-          <svg class="svg-icon" style="color: var(--c-primary); margin-top: 2px;"><use href="#icon-clock"/></svg>
-          <div>El estado se calcula automáticamente. Úsalo solo si requieres forzar una pausa o entrega.</div>
-        </div>
+      <!-- Estado y notas -->
+      <section class="form-section" aria-labelledby="secEstado">
+        <h3 class="section-title" id="secEstado"><svg class="svg-icon"><use href="#icon-clock"/></svg>Estado y notas</h3>
         <div class="form-grid">
           <label class="form-label fg-full">
-            Estado Manual (Opcional)
+            Estado manual (opcional)
             <select name="estadoManual">
-              <option value="">Automático según avance (Recomendado)</option>
+              <option value="">Automático según avance</option>
               <option value="En producción">En producción</option>
-              <option value="En pausa">En pausa (espera cliente / insumos)</option>
+              <option value="En pausa">En pausa (espera cliente o insumos)</option>
               <option value="Entregado">Entregado al cliente</option>
-              <option value="Anulado">Anulado / Cancelado</option>
+              <option value="Anulado">Anulado / cancelado</option>
             </select>
           </label>
+          <div class="estado-preview fg-full" id="estadoPreview" aria-live="polite"></div>
           <label class="form-label fg-full">
-            Observaciones y Acuerdos de Venta
+            Observaciones y acuerdos de venta
             <textarea name="observaciones" placeholder="Caja especial, bolsas, tipo de pasas, anticipo pagado, etc."></textarea>
           </label>
-          <div class="form-error-msg" role="alert" id="errPanel3"></div>
         </div>
-      </div>
+      </section>
 
+      <div class="danger-zone" id="dangerZone" hidden>
+        <button type="button" class="btn btn-danger" id="btnDelete">
+          <svg class="svg-icon"><use href="#icon-trash"/></svg>
+          <span>Eliminar pedido</span>
+        </button>
+      </div>
     </form>
   </div>
 
-  <div class="dlg-footer">
-    <button type="button" class="btn btn-danger" id="btnDelete" hidden>
-      <svg class="svg-icon"><use href="#icon-trash"/></svg>
-      <span>Eliminar</span>
-    </button>
-    <div style="display: flex; gap: 8px; margin-left: auto;">
-      <button type="button" class="btn btn-ghost" id="btnBack">← Atrás</button>
-      <button type="button" class="btn btn-primary" id="btnNext">Siguiente →</button>
+  <!-- Aviso inline (cambios sin guardar / confirmar eliminación): reemplaza a confirm() -->
+  <div class="dlg-bar" id="dlgBar" role="alertdialog" aria-labelledby="dlgBarMsg" hidden>
+    <p id="dlgBarMsg"></p>
+    <div class="dlg-bar-actions">
+      <button type="button" class="btn btn-ghost" id="barCancel"></button>
+      <button type="button" class="btn btn-confirm" id="barConfirm"></button>
     </div>
+  </div>
+
+  <div class="dlg-footer">
+    <button type="button" class="btn btn-ghost" id="btnPedidoCancel">Cancelar</button>
+    <button type="submit" form="formPedido" class="btn btn-primary" id="btnPedidoSave">Guardar pedido</button>
   </div>
 </dialog>
 
@@ -1973,7 +1950,7 @@ $('#mainContainer').addEventListener('click', ev => {
 
   // Edit order
   const ed = ev.target.closest('[data-edit]');
-  if (ed) openWizard(ed.dataset.edit);
+  if (ed) openPedido(ed.dataset.edit);
 });
 
 /* ===== FILTER PILLS LISTENER ===== */
@@ -1998,35 +1975,51 @@ function touch(p) {
   scheduleSync();
 }
 
-/* ===== WIZARD CONTROLS ===== */
-const dlgPedido = $('#dlgPedido');
+/* ===== FORMULARIO DE PEDIDO (una pantalla; bottom sheet en móvil) ===== */
+const dlgPedido  = $('#dlgPedido');
 const formPedido = $('#formPedido');
-let currentPanel = 0;
-const PANELS = 4;
+const dlgBar     = $('#dlgBar');
+let snapshot = '';        // estado del formulario al abrir, para detectar cambios sin guardar
+let barAction = null;     // acción de confirmación del aviso inline
 
-function updateWizardUI() {
-  // Panels
-  document.querySelectorAll('.wz-panel').forEach((p, i) => p.classList.toggle('active', i === currentPanel));
-  // Step Nav Buttons
-  document.querySelectorAll('.wz-step-btn').forEach((s, i) => {
-    s.classList.toggle('active', i === currentPanel);
-    s.classList.toggle('done', i < currentPanel);
-  });
-  // Footer navigation buttons
-  $('#btnBack').textContent = currentPanel === 0 ? '✕ Cancelar' : '← Atrás';
-  $('#btnNext').textContent = currentPanel === PANELS - 1 ? 'Guardar Pedido' : 'Siguiente →';
+const formState = () => JSON.stringify([...new FormData(formPedido)]);
+const isDirty   = () => formState() !== snapshot;
+
+function fieldError(name, msg) {
+  const el = $('#err-' + name), input = formPedido.elements[name];
+  if (!el) return;
+  el.textContent = msg || '';
+  el.classList.toggle('visible', !!msg);
+  if (msg) input.setAttribute('aria-invalid', 'true'); else input.removeAttribute('aria-invalid');
+}
+function clearErrors() {
+  ['marca', 'cantidad', 'peso', 'formula', 'fechaEntrega'].forEach(n => fieldError(n, ''));
 }
 
-function openWizard(id) {
-  currentPanel = 0;
+function updateEstadoPreview() {
+  const f = formPedido.elements;
+  const e = estado({ estadoManual: f.estadoManual.value, pedidoSistema: f.pedidoSistema.value });
+  $('#estadoPreview').innerHTML = `Estado resultante: <strong>${esc(e)}</strong>${f.estadoManual.value ? ' (manual)' : ' (automático)'}`;
+}
+
+function showBar({ msg, cancel, confirm, action }) {
+  $('#dlgBarMsg').textContent = msg;
+  $('#barCancel').textContent = cancel;
+  $('#barConfirm').textContent = confirm;
+  barAction = action;
+  dlgBar.hidden = false;
+  $('#barCancel').focus();
+}
+function hideBar() { dlgBar.hidden = true; barAction = null; }
+
+function openPedido(id) {
   formPedido.reset();
   clearErrors();
+  hideBar();
 
   const p = id ? pedidos.find(x => x.id === id) : null;
-  $('#dlgTitle').textContent = p ? `Editar Pedido: ${p.marca}` : 'Nuevo Pedido de Maquila';
-  const btnDel = $('#btnDelete');
-  if (p) btnDel.removeAttribute('hidden');
-  else btnDel.setAttribute('hidden', '');
+  $('#dlgTitle').textContent = p ? 'Editar pedido' : 'Nuevo pedido';
+  $('#dangerZone').hidden = !p;
 
   if (p) {
     for (const el of formPedido.elements) {
@@ -2035,80 +2028,53 @@ function openWizard(id) {
   } else {
     formPedido.elements.fechaPedido.value = hoy();
   }
-  updateWizardUI();
+  updateEstadoPreview();
+  snapshot = formState();
   dlgPedido.showModal();
+  dlgPedido.querySelector('.dlg-body').scrollTop = 0;
+  if (!p) formPedido.elements.marca.focus({ preventScroll: true });
 }
 
-function clearErrors() {
-  document.querySelectorAll('.form-error-msg').forEach(el => {
-    el.textContent = '';
-    el.classList.remove('visible');
+/* Cerrar: si hay cambios sin guardar pide confirmación dentro del propio formulario */
+function requestClose() {
+  if (!isDirty()) { dlgPedido.close(); return; }
+  showBar({
+    msg: 'Tienes cambios sin guardar. ¿Descartarlos?',
+    cancel: 'Seguir editando', confirm: 'Descartar',
+    action: () => dlgPedido.close(),
   });
 }
 
-function validatePanel(idx) {
+function validateForm() {
   clearErrors();
-  if (idx === 0) {
-    const f = formPedido.elements;
-    const errs = [];
-    if (!f.marca.value.trim()) errs.push('marca / cliente');
-    if (!(Number(f.cantidad.value) > 0)) errs.push('cantidad válida');
-    if (!(Number(f.peso.value) > 0)) errs.push('peso');
-    if (!f.formula.value) errs.push('fórmula');
-    if (errs.length) {
-      const el = $('#errPanel0');
-      el.textContent = 'Por favor completa: ' + errs.join(', ');
-      el.classList.add('visible');
-      return false;
-    }
+  const f = formPedido.elements;
+  const errs = {};
+  if (!f.marca.value.trim()) errs.marca = 'Ingresa la marca o cliente.';
+  const cant = Number(f.cantidad.value);
+  if (!(cant > 0)) errs.cantidad = 'Ingresa una cantidad mayor a 0.';
+  else if (!Number.isInteger(cant)) errs.cantidad = 'Debe ser un número entero.';
+  if (!(Number(f.peso.value) > 0)) errs.peso = 'Ingresa el peso en gramos (mayor a 0).';
+  if (!f.formula.value) errs.formula = 'Selecciona una fórmula.';
+  if (f.fechaPedido.value && f.fechaEntrega.value && f.fechaEntrega.value < f.fechaPedido.value) {
+    errs.fechaEntrega = 'La entrega no puede ser anterior a la fecha de pedido.';
+  }
+  const names = Object.keys(errs);
+  names.forEach(n => fieldError(n, errs[n]));
+  if (names.length) {
+    const first = formPedido.elements[['marca', 'cantidad', 'peso', 'formula', 'fechaEntrega'].find(n => errs[n])];
+    first.focus({ preventScroll: true });
+    first.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    return false;
   }
   return true;
 }
 
-$('#btnNext').addEventListener('click', () => {
-  if (currentPanel < PANELS - 1) {
-    if (!validatePanel(currentPanel)) return;
-    currentPanel++;
-    updateWizardUI();
-  } else {
-    saveWizard();
-  }
-});
-
-$('#btnBack').addEventListener('click', () => {
-  if (currentPanel > 0) {
-    currentPanel--;
-    updateWizardUI();
-  } else {
-    dlgPedido.close();
-  }
-});
-
-// Step tab buttons in wizard
-document.querySelectorAll('.wz-step-btn').forEach((btn, idx) => {
-  btn.addEventListener('click', () => {
-    if (idx > currentPanel && !validatePanel(currentPanel)) return;
-    currentPanel = idx;
-    updateWizardUI();
-  });
-});
-
-// Close X in wizard
-$('#btnWzClose').addEventListener('click', () => dlgPedido.close());
-
-// "Hoy" quick date buttons
-formPedido.addEventListener('click', ev => {
-  const b = ev.target.closest('.today-tag-btn');
-  if (b) formPedido.elements[b.dataset.hoy].value = hoy();
-});
-
 // Evita que Sheets interprete el texto como fórmula (=, +, @ al inicio). El '-' es válido.
 const noFormula = v => { const t = String(v ?? '').replace(/^[\t\r]+/, ''); return /^[=+@]/.test(t) ? ' ' + t : t; };
 
-function saveWizard() {
-  if (!validatePanel(0)) { currentPanel = 0; updateWizardUI(); return; }
+function savePedido() {
+  if (!validateForm()) return;
   const f = Object.fromEntries(new FormData(formPedido));
-  // sanitize formula injection
   f.observaciones = noFormula(f.observaciones);
   f.marca = noFormula(f.marca.trim());
 
@@ -2119,17 +2085,53 @@ function saveWizard() {
   dlgPedido.close();
 }
 
+formPedido.addEventListener('submit', ev => { ev.preventDefault(); savePedido(); });
+
+// Limpia el error de un campo al corregirlo y refresca el estado resultante
+formPedido.addEventListener('input', ev => {
+  if (ev.target.name && $('#err-' + ev.target.name)) fieldError(ev.target.name, '');
+  updateEstadoPreview();
+});
+formPedido.addEventListener('change', updateEstadoPreview);
+
+// Botones "Hoy" y "Quitar fecha"
+formPedido.addEventListener('click', ev => {
+  const hoyBtn = ev.target.closest('[data-hoy]');
+  const clrBtn = ev.target.closest('[data-limpiar]');
+  const name = hoyBtn?.dataset.hoy || clrBtn?.dataset.limpiar;
+  if (!name) return;
+  formPedido.elements[name].value = hoyBtn ? hoy() : '';
+  formPedido.elements[name].dispatchEvent(new Event('input', { bubbles: true }));
+});
+
+$('#btnPedidoClose').addEventListener('click', requestClose);
+$('#btnPedidoCancel').addEventListener('click', requestClose);
+$('#barCancel').addEventListener('click', () => { hideBar(); });
+$('#barConfirm').addEventListener('click', () => { const a = barAction; hideBar(); if (a) a(); });
+
+// Esc: si el aviso está abierto lo cierra; si no, intenta cerrar el formulario
+dlgPedido.addEventListener('cancel', ev => {
+  ev.preventDefault();
+  if (!dlgBar.hidden) hideBar(); else requestClose();
+});
+dlgPedido.addEventListener('close', hideBar);
+
+// Tocar el fondo cierra solo si el gesto empezó y terminó fuera (seleccionar texto no cuenta)
+let downOnBackdrop = false;
+dlgPedido.addEventListener('pointerdown', ev => { downOnBackdrop = ev.target === dlgPedido; });
+dlgPedido.addEventListener('click', ev => { if (ev.target === dlgPedido && downOnBackdrop) requestClose(); });
+
 $('#btnDelete').addEventListener('click', () => {
   const p = pedidos.find(x => x.id === formPedido.elements.id.value);
   if (!p) return;
-  if (!confirm(`¿Eliminar el pedido de "${p.marca}"?\n\nConsejo: Si el cliente canceló el pedido, es mejor marcarlo como "Anulado" para mantener el historial.`)) return;
-  p.deleted = true;
-  touch(p);
-  dlgPedido.close();
+  showBar({
+    msg: `¿Eliminar el pedido de "${p.marca}"? Si el cliente canceló, es mejor marcarlo como «Anulado» para conservar el historial.`,
+    cancel: 'Cancelar', confirm: 'Eliminar',
+    action: () => { p.deleted = true; touch(p); dlgPedido.close(); },
+  });
 });
 
-// El wizard no se cierra al tocar fuera: evita perder lo escrito (Esc o ✕ sí lo cierran).
-$('#btnNew').addEventListener('click', () => openWizard(null));
+$('#btnNew').addEventListener('click', () => openPedido(null));
 
 /* ===== CONFIG DIALOG (SHEETS) ===== */
 const dlgCfg = $('#dlgCfg');
@@ -2138,7 +2140,7 @@ const formCfg = $('#formCfg');
 $('#btnCfg').addEventListener('click', () => {
   formCfg.elements.url.value = cfg.url;
   formCfg.elements.token.value = cfg.token;
-  if (dlgPedido.open) dlgPedido.close();
+  if (dlgPedido.open) { dlgPedido.close(); }
   dlgCfg.showModal();
 });
 $('#btnCfgCancel').addEventListener('click', () => dlgCfg.close());
@@ -2235,7 +2237,7 @@ setViewMode(viewMode);
 // Acceso directo de la app instalada (manifest → "Nuevo pedido")
 if (new URLSearchParams(location.search).has('nuevo')) {
   history.replaceState(null, '', location.pathname);
-  openWizard(null);
+  openPedido(null);
 }
 sync();
 </script>
