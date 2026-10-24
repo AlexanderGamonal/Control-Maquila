@@ -91,6 +91,7 @@
   --txt-main: #f5f5f4;
   --txt-muted: #a8a29e;
   --txt-subtle: #9c958f;
+  --toast-bg: #f5f5f4; --toast-fg: #1c1917; --toast-action: #9a3412;
   --txt-inv: #0c0a09;
 
   /* Colores de texto con contraste AA sobre superficies oscuras */
@@ -121,6 +122,7 @@
   --txt-main: #1c1917;
   --txt-muted: #57534e;
   --txt-subtle: #6f675e;
+  --toast-bg: #1c1917; --toast-fg: #f5f5f4; --toast-action: #fb923c;
   --txt-inv: #ffffff;
 
   /* Colores de texto con contraste AA sobre superficies claras */
@@ -917,6 +919,34 @@ main {
 }
 .fab:active { transform: scale(0.95); }
 
+/* Avisos con "Deshacer" (reemplazan confirm() en acciones reversibles) */
+.toast-region {
+  position: fixed; z-index: 40;
+  left: 16px; right: 88px;           /* deja libre el botón + */
+  bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  display: flex; flex-direction: column; align-items: flex-start;
+  pointer-events: none;
+}
+.toast {
+  pointer-events: auto;
+  display: flex; align-items: center; gap: 4px;
+  max-width: 440px; min-height: 48px;
+  padding: 4px 4px 4px 16px;
+  background: var(--toast-bg); color: var(--toast-fg);
+  border-radius: var(--r-md); box-shadow: var(--shadow-lg);
+  font-size: 0.88rem; font-weight: 500; line-height: 1.35;
+  animation: toastIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.toast-msg { flex: 1; overflow-wrap: anywhere; padding: 6px 0; }
+.toast-action {
+  flex-shrink: 0; min-height: 44px; padding: 0 14px;
+  border: none; border-radius: var(--r-sm); background: transparent;
+  color: var(--toast-action); font: inherit; font-weight: 700; cursor: pointer;
+}
+.toast-action:hover { background: rgba(127, 127, 127, 0.16); }
+.toast-action:focus-visible { outline: 2px solid var(--toast-action); outline-offset: -2px; }
+@keyframes toastIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+
 /* Standard Dialog Style */
 dialog {
   border: none;
@@ -1317,6 +1347,9 @@ header.compact .header-main-row { display: none; }
 
 <!-- MAIN CONTENT -->
 <main id="mainContainer"></main>
+
+<!-- AVISOS (Deshacer) -->
+<div class="toast-region" id="toastRegion" role="status" aria-live="polite"></div>
 
 <!-- FLOATING ACTION BUTTON (NEW ORDER) -->
 <button class="fab" id="btnNew" aria-label="Nuevo pedido" title="Nuevo pedido">
@@ -1930,21 +1963,64 @@ function renderTable(list) {
   `;
 }
 
+/* ===== AVISO CON "DESHACER" ===== */
+const TOAST_MS = 7000, TOAST_RESUME_MS = 3000;
+let toastTimer = null;
+
+function hideToast() {
+  clearTimeout(toastTimer);
+  $('#toastRegion').replaceChildren();
+}
+
+/* Un solo aviso a la vez. `undo` se ejecuta si la persona toca "Deshacer".
+   Se pausa mientras el cursor o el foco están sobre el aviso. */
+function showToast(msg, undo) {
+  hideToast();
+  const el = document.createElement('div');
+  el.className = 'toast';
+  const m = document.createElement('span');
+  m.className = 'toast-msg';
+  m.textContent = msg;
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'toast-action';
+  b.textContent = 'Deshacer';
+  b.addEventListener('click', () => { hideToast(); undo(); });
+  el.append(m, b);
+  const arm = ms => { clearTimeout(toastTimer); toastTimer = setTimeout(hideToast, ms); };
+  el.addEventListener('pointerenter', () => clearTimeout(toastTimer));
+  el.addEventListener('pointerleave', () => arm(TOAST_RESUME_MS));
+  el.addEventListener('focusin', () => clearTimeout(toastTimer));
+  el.addEventListener('focusout', () => arm(TOAST_RESUME_MS));
+  el.addEventListener('keydown', ev => { if (ev.key === 'Escape') hideToast(); });
+  $('#toastRegion').append(el);
+  arm(TOAST_MS);
+}
+
+/* El deshacer busca el pedido por id: la sincronización reemplaza los objetos de `pedidos`,
+   así que una referencia guardada podría quedar desactualizada. */
+function undoField(id, key, prev) {
+  const p = pedidos.find(x => x.id === id);
+  if (!p) return;
+  p[key] = prev;
+  touch(p);
+}
+
 /* ===== EVENT DELEGATION: CARDS & TABLE ===== */
 $('#mainContainer').addEventListener('click', ev => {
-  // Step quick toggle
+  // Marcar / desmarcar etapa: se aplica al instante y se puede deshacer
   const st = ev.target.closest('[data-step]');
   if (st) {
-    const p = pedidos.find(x => x.id === st.dataset.id);
-    const k = st.dataset.step;
+    const id = st.dataset.id, k = st.dataset.step;
+    const p = pedidos.find(x => x.id === id);
     if (!p) return;
-    if (p[k]) {
-      if (!confirm(`¿Deseas desmarcar la etapa "${STEPS.find(s=>s.key===k)?.label}"?`)) return;
-      p[k] = '';
-    } else {
-      p[k] = hoy();
-    }
+    const label = STEPS.find(s => s.key === k)?.label || k;
+    const prev = p[k];
+    p[k] = prev ? '' : hoy();
     touch(p);
+    // render() recrea el botón: devuelve el foco para quien navega con teclado
+    document.querySelector(`[data-step="${k}"][data-id="${CSS.escape(id)}"]`)?.focus({ preventScroll: true });
+    showToast(`${label} ${prev ? 'desmarcada' : 'marcada'}`, () => undoField(id, k, prev));
     return;
   }
 
@@ -2127,7 +2203,11 @@ $('#btnDelete').addEventListener('click', () => {
   showBar({
     msg: `¿Eliminar el pedido de "${p.marca}"? Si el cliente canceló, es mejor marcarlo como «Anulado» para conservar el historial.`,
     cancel: 'Cancelar', confirm: 'Eliminar',
-    action: () => { p.deleted = true; touch(p); dlgPedido.close(); },
+    action: () => {
+      const id = p.id, nombre = p.marca;
+      p.deleted = true; touch(p); dlgPedido.close();
+      showToast(`Pedido de "${nombre}" eliminado`, () => undoField(id, 'deleted', false));
+    },
   });
 });
 
