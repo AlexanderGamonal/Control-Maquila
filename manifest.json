@@ -1,17 +1,27 @@
 {
+  "id": "./index.html",
   "name": "Control de Maquila",
   "short_name": "Maquila",
   "description": "Seguimiento de pedidos de maquila de panetones",
+  "lang": "es",
   "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
-  "background_color": "#1a0e08",
-  "theme_color": "#f07021",
   "orientation": "any",
+  "background_color": "#0c0a09",
+  "theme_color": "#0c0a09",
+  "categories": ["business", "productivity"],
   "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
     {
-      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='40' fill='%23f07021'/><text y='140' x='50%' text-anchor='middle' font-size='110' font-family='system-ui'>🎄</text></svg>",
-      "sizes": "192x192",
-      "type": "image/svg+xml"
+      "name": "Nuevo pedido",
+      "short_name": "Nuevo",
+      "url": "./index.html?nuevo=1",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
     }
   ]
 }

@@ -27,8 +27,10 @@ Aplicación Web Progresiva (PWA) moderna, responsiva y offline-first diseñada p
 ```text
 ├── index.html        # Aplicación web completa (HTML5 + CSS3 Vanilla + JS)
 ├── Code.gs           # Backend para Google Apps Script (Web App)
-├── manifest.json     # Manifiesto de instalación PWA
-├── sw.js             # Service Worker para funcionamiento offline
+├── manifest.json     # Manifiesto de instalación PWA (íconos PNG, maskable, acceso directo)
+├── sw.js             # Service Worker: red primero para el HTML, caché para el resto
+├── icons/            # Íconos PWA (192, 512, maskable 512, apple-touch-icon)
+├── fonts/            # Inter (latin, variable) alojada localmente + licencia OFL
 ├── .gitignore        # Configuración de exclusiones git
 └── README.md         # Documentación del proyecto
 ```
@@ -49,6 +51,16 @@ Aplicación Web Progresiva (PWA) moderna, responsiva y offline-first diseñada p
 7. En la aplicación web, abre **Configuración (⚙)**, pega la URL y el token, y guarda.
 
 > Si ya tenías el script instalado: pega el nuevo `Code.gs`, ejecuta `generarToken`, **crea una nueva versión** de la implementación y actualiza el token en la app. Las columnas de la hoja pasan a formato texto automáticamente (las fechas ya no se convierten a objetos Date).
+
+---
+
+## 📲 PWA y despliegue
+
+- **Actualizaciones:** el HTML se pide primero a la red (con revalidación), así que cada despliegue se ve en la **primera** carga con conexión. Sin conexión, o si la red tarda más de 4 s, se usa la última copia guardada y la descarga termina en segundo plano para la siguiente carga.
+- **Cuándo subir `VERSION` en `sw.js`:** solo si cambias la lista `PRECACHE` (nuevos archivos, íconos o fuentes). Los cambios en `index.html` no lo requieren.
+- **Migración desde la versión anterior:** el service worker viejo era caché-primero, así que la primera recarga tras actualizar aún puede mostrar la versión previa; desde la segunda ya funciona el esquema nuevo.
+- **Fuente:** Inter está en `fonts/` (no se pide nada a Google Fonts), por lo que la tipografía también funciona sin conexión.
+- **Instalación:** en Android/Chrome aparece «Instalar app». En iPhone: Compartir ➔ «Añadir a pantalla de inicio». La app instalada incluye el acceso directo «Nuevo pedido».
 
 ---
 
