@@ -56,6 +56,16 @@ Aplicación Web Progresiva (PWA) moderna, responsiva y offline-first diseñada p
 
 ---
 
+## 🛡️ Seguridad de los datos al sincronizar
+
+- **Perder la conexión no borra nada:** si la hoja no responde, los pedidos quedan en este equipo y se envían cuando vuelva la red.
+- **La app nunca descarta datos locales por lo que diga la hoja.** Si la hoja responde vacía, incompleta, borrada o restaurada a una versión antigua, lo que falta (o lo que esté más reciente en el equipo) se conserva y se **reenvía automáticamente**. Si la hoja sigue sin guardarlos, la app avisa («La hoja no guardó N pedidos · siguen seguros en este equipo») y no insiste en bucle.
+- **Cambiar de hoja:** al guardar una URL distinta en ⚙ (o conectar por primera vez), **todo lo que hay en el equipo se envía a la nueva hoja**. Si la nueva hoja ya tenía datos, se fusionan por fecha de modificación y gana lo más reciente. Cambiar solo el token no reenvía nada.
+- **Filas borradas a mano en la hoja** reaparecerán en la siguiente sincronización (el equipo las reenvía). Para eliminar un pedido de verdad usa «Eliminar pedido» en la app.
+- El respaldo local vive en el navegador: si borras los datos del sitio antes de sincronizar, se pierden los cambios pendientes.
+
+---
+
 ## 📲 PWA y despliegue
 
 - **Actualizaciones:** el HTML se pide primero a la red (con revalidación), así que cada despliegue se ve en la **primera** carga con conexión. Sin conexión, o si la red tarda más de 4 s, se usa la última copia guardada y la descarga termina en segundo plano para la siguiente carga.

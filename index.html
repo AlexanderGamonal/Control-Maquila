@@ -1517,7 +1517,7 @@ header.compact .header-main-row { display: none; }
     <div class="dlg-body">
       <div class="hint-banner">
         <svg class="svg-icon" style="color: var(--c-primary); margin-top: 2px;"><use href="#icon-settings"/></svg>
-        <div>Conecta la hoja de cálculo para sincronizar automáticamente los pedidos con la oficina.</div>
+        <div>Conecta la hoja de cálculo para sincronizar automáticamente los pedidos con la oficina. Si cambias a una nueva hoja, los pedidos guardados en este equipo se envían a ella automáticamente; si la hoja ya tiene datos, se fusionan y gana lo más reciente.</div>
       </div>
 
       <div class="form-grid">
@@ -2229,14 +2229,22 @@ dlgCfg.addEventListener('click', ev => { if (ev.target === dlgCfg) dlgCfg.close(
 
 formCfg.addEventListener('submit', ev => {
   ev.preventDefault();
+  const prevUrl = cfg.url;
   cfg = { url: formCfg.elements.url.value.trim(), token: formCfg.elements.token.value.trim() };
   try { localStorage.setItem(LS_CFG, JSON.stringify(cfg)); } catch {}
+  // Hoja distinta (o primera conexión): todo lo que hay en este equipo se envía a la nueva hoja.
+  // Si la hoja ya tiene datos, se fusionan por fecha de modificación (gana el más reciente).
+  if (cfg.url && cfg.url !== prevUrl && pedidos.length) {
+    pedidos.forEach(p => dirty.add(p.id));
+    lastResendKey = '';
+    persist();
+  }
   dlgCfg.close();
   sync();
 });
 
 /* ===== GOOGLE SHEETS SYNC ===== */
-let syncing = false, syncTimer = null;
+let syncing = false, syncTimer = null, lastResendKey = '';
 function scheduleSync() { clearTimeout(syncTimer); syncTimer = setTimeout(sync, 800); }
 
 async function sync() {
@@ -2260,24 +2268,48 @@ async function sync() {
     });
     const data = await res.json();
     if (!data.ok) throw new Error(data.error || 'Error en Google Sheets');
+    if (!Array.isArray(data.records)) throw new Error('respuesta inválida');
 
     sentMap.forEach((u, id) => {
       const p = pedidos.find(x => x.id === id);
       if (p && p.updatedAt === u) dirty.delete(id);
     });
 
-    const map = new Map(data.records.map(r => [String(r.id), norm(r)]));
-    pedidos.forEach(p => { if (dirty.has(p.id)) map.set(p.id, p); });
-    pedidos = [...map.values()];
+    /* Fusión que NUNCA descarta datos locales: lo que la hoja no tenga (hoja nueva, vacía,
+       borrada o restaurada a una versión antigua) se conserva y se vuelve a enviar. */
+    const merged = new Map(data.records.map(r => { const n = norm(r); return [n.id, n]; }));
+    const resend = [];
+    pedidos.forEach(p => {
+      const remote = merged.get(p.id);
+      if (!remote) { merged.set(p.id, p); resend.push(p.id); }                       // la hoja no lo tiene
+      else if (dirty.has(p.id)) merged.set(p.id, p);                                 // editado mientras se enviaba
+      else if (p.updatedAt > remote.updatedAt) { merged.set(p.id, p); resend.push(p.id); } // la hoja tiene algo más antiguo
+    });
+    pedidos = [...merged.values()];
+
+    let retry = false;
+    if (resend.length) {
+      resend.forEach(id => dirty.add(id));
+      const key = resend.slice().sort().join(',');
+      retry = key !== lastResendKey;   // si ya lo intentamos y la hoja sigue sin guardarlos, no insistir en bucle
+      lastResendKey = key;
+    } else {
+      lastResendKey = '';
+    }
     persist();
     render();
+
     const h = new Date().toLocaleTimeString('es-PE', { hour:'2-digit', minute:'2-digit' });
-    setStatus(`Sincronizado ${h}`, 'ok');
+    if (!resend.length) setStatus(`Sincronizado ${h}`, 'ok');
+    else if (retry) setStatus(`Enviando ${resend.length} pedido${resend.length > 1 ? 's' : ''} a la hoja…`, 'warn');
+    else setStatus(`La hoja no guardó ${resend.length} pedido${resend.length > 1 ? 's' : ''} · siguen seguros en este equipo`, 'warn');
+    if (retry) scheduleSync();
   } catch(e) {
     setStatus(
-      e.message === 'token'
-        ? 'Token incorrecto (revisa ⚙)'
-        : `Sin conexión · ${dirty.size} guardados local`,
+      e.message === 'token'          ? 'Token incorrecto (revisa ⚙)'
+      : e instanceof TypeError       ? `Sin conexión · ${dirty.size} guardados local`
+      : e instanceof SyntaxError     ? 'La URL no responde como la hoja (revisa ⚙)'
+      :                                `Error de la hoja: ${e.message}`,
       'warn'
     );
   } finally {
