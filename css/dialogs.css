@@ -1,0 +1,85 @@
+/* Standard Dialog Style */
+dialog {
+  border: none;
+  border-radius: var(--r-xl);
+  padding: 0;
+  background: var(--bg-surface);
+  color: var(--txt-main);
+  width: min(560px, 94vw);
+  box-shadow: var(--shadow-lg), 0 0 0 1px var(--border);
+  max-height: 90dvh;
+  overflow: hidden;
+  margin: auto;
+}
+dialog:not([open]) {
+  display: none !important;
+}
+dialog[open] {
+  display: flex;
+  flex-direction: column;
+  animation: modalIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.95) translateY(12px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+dialog::backdrop {
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+}
+
+/* Bottom sheet en móvil: el formulario de pedido sube desde abajo */
+@media (max-width: 640px) {
+  #dlgPedido {
+    width: 100%; max-width: 100%;
+    margin: auto 0 0 0;
+    border-radius: var(--r-xl) var(--r-xl) 0 0;
+    max-height: 94dvh;
+  }
+  #dlgPedido[open] { animation: sheetIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) both; }
+  #dlgPedido .dlg-header { position: relative; padding-top: 22px; }
+  #dlgPedido .dlg-header::before {   /* asa del sheet */
+    content: ''; position: absolute; top: 8px; left: 50%; width: 38px; height: 4px;
+    margin-left: -19px; border-radius: 4px; background: var(--border-strong);
+  }
+  #dlgPedido .dlg-footer { padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px)); }
+}
+@keyframes sheetIn { from { transform: translateY(100%); } to { transform: none; } }
+
+/* Modal Inner Structure */
+.dlg-header {
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+.dlg-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--txt-main);
+}
+.dlg-close-btn {
+  background: transparent;
+  border: none;
+  color: var(--txt-subtle);
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: var(--r-sm);
+  display: grid;
+  place-items: center;
+  transition: var(--transition);
+}
+.dlg-close-btn:hover { color: var(--txt-main); background: var(--bg-surface-subtle); }
+
+.dlg-body {
+  padding: 16px 20px;
+  overflow-y: auto;
+  flex: 1;
+}

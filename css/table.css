@@ -1,0 +1,101 @@
+/* ==========================================================================
+   DATA TABLE / SPREADSHEET VIEW (Compact for Sales)
+   ========================================================================== */
+.table-wrapper {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  overflow-x: auto;
+  box-shadow: var(--shadow-sm);
+}
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+  text-align: left;
+  white-space: nowrap;
+}
+.data-table th {
+  background: var(--bg-surface-subtle);
+  color: var(--txt-muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+}
+.data-table td {
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--border);
+  color: var(--txt-main);
+  vertical-align: middle;
+}
+.data-table tr:hover td {
+  background: var(--table-hover);
+}
+.data-table tr.status-anulado td { filter: grayscale(0.7); }
+.data-table tr.status-anulado .table-name { text-decoration: line-through; }
+
+/* Sticky Marca column on mobile table */
+@media (max-width: 640px) {
+  .data-table th:first-child,
+  .data-table td:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 5;
+    background: var(--bg-surface);
+    box-shadow: 2px 0 6px rgba(0,0,0,0.1);
+  }
+  .data-table tr:hover td:first-child {
+    background: var(--bg-surface-elevated);
+  }
+}
+
+.table-client {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 220px;
+}
+.table-client > div:last-child { min-width: 0; }
+.table-name {
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+@media (max-width: 640px) {
+  .table-client { max-width: 150px; }
+}
+.table-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: var(--r-sm);
+  display: grid;
+  place-items: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.table-toggle-btn {
+  border: 1px solid var(--border);
+  background: var(--bg-surface-subtle);
+  color: var(--txt-subtle);
+  border-radius: var(--r-sm);
+  padding: 3px 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: var(--transition);
+  font-family: inherit;
+}
+.table-toggle-btn.done {
+  background: var(--st-entregado-bg);
+  border-color: rgba(16, 185, 129, 0.35);
+  color: var(--st-entregado);
+}
+

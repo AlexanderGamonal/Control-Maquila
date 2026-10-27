@@ -1,0 +1,35 @@
+/* ==========================================================================
+   CONTAINER & VIEWS
+   ========================================================================== */
+main {
+  max-width: 1200px;
+  margin: 16px auto 0;
+  padding: 0 16px;
+}
+
+/* Empty State */
+.empty-box {
+  padding: 60px 20px;
+  text-align: center;
+  color: var(--txt-muted);
+  background: var(--bg-surface);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--r-lg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+.empty-icon-wrap {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--bg-surface-subtle);
+  display: grid;
+  place-items: center;
+  font-size: 1.5rem;
+  color: var(--txt-subtle);
+}
+.empty-title { font-size: 1rem; font-weight: 600; color: var(--txt-main); }
+.empty-desc { font-size: 0.83rem; max-width: 320px; }
+

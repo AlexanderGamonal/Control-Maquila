@@ -1,0 +1,55 @@
+/* ==========================================================================
+   FAB & DIALOGS
+   ========================================================================== */
+.fab {
+  position: fixed;
+  right: max(20px, env(safe-area-inset-right, 0px));
+  bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  z-index: 25;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(135deg, #c2410c, #ea580c);
+  color: #ffffff;
+  font-size: 1.4rem;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(234, 88, 12, 0.45);
+  display: grid;
+  place-items: center;
+  transition: var(--transition);
+}
+.fab:hover {
+  transform: scale(1.08) rotate(90deg);
+  box-shadow: 0 6px 26px rgba(234, 88, 12, 0.6);
+}
+.fab:active { transform: scale(0.95); }
+
+/* Avisos con "Deshacer" (reemplazan confirm() en acciones reversibles) */
+.toast-region {
+  position: fixed; z-index: 40;
+  left: 16px; right: 88px;           /* deja libre el botón + */
+  bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  display: flex; flex-direction: column; align-items: flex-start;
+  pointer-events: none;
+}
+.toast {
+  pointer-events: auto;
+  display: flex; align-items: center; gap: 4px;
+  max-width: 440px; min-height: 48px;
+  padding: 4px 4px 4px 16px;
+  background: var(--toast-bg); color: var(--toast-fg);
+  border-radius: var(--r-md); box-shadow: var(--shadow-lg);
+  font-size: 0.88rem; font-weight: 500; line-height: 1.35;
+  animation: toastIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.toast-msg { flex: 1; overflow-wrap: anywhere; padding: 6px 0; }
+.toast-action {
+  flex-shrink: 0; min-height: 44px; padding: 0 14px;
+  border: none; border-radius: var(--r-sm); background: transparent;
+  color: var(--toast-action); font: inherit; font-weight: 700; cursor: pointer;
+}
+.toast-action:hover { background: rgba(127, 127, 127, 0.16); }
+.toast-action:focus-visible { outline: 2px solid var(--toast-action); outline-offset: -2px; }
+@keyframes toastIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+

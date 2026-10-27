@@ -1,0 +1,49 @@
+/* ==========================================================================
+   RESET & FOUNDATION
+   ========================================================================== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html {
+  scroll-behavior: smooth;
+  overflow-x: clip; /* 'hidden' rompía el position:sticky del header */
+  max-width: 100vw;
+  width: 100%;
+}
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--bg-app);
+  color: var(--txt-main);
+  min-height: 100dvh;
+  padding-bottom: calc(90px + env(safe-area-inset-bottom, 0px));
+  overflow-x: clip;
+  max-width: 100vw;
+  width: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Background aesthetic gradient */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle 800px at 50% -200px, rgba(234, 88, 12, 0.08), transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+[hidden] { display: none !important; }
+
+/* Standard SVG icon utility */
+.svg-icon {
+  width: 1em;
+  height: 1em;
+  display: inline-block;
+  vertical-align: -0.15em;
+  stroke-width: 2;
+  stroke: currentColor;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex-shrink: 0;
+}
+

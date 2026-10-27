@@ -1,0 +1,47 @@
+/* ==========================================================================
+   ACCESIBILIDAD: foco visible, objetivos táctiles, 16px en campos, movimiento
+   ========================================================================== */
+button:focus-visible, .pill:focus-visible, [tabindex]:focus-visible {
+  outline: 2px solid var(--c-primary-text);
+  outline-offset: 2px;
+}
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+}
+/* Pantallas táctiles: objetivos de ~40-44px */
+@media (pointer: coarse) {
+  .action-btn { width: 44px; height: 44px; }
+  .view-btn { min-height: 40px; min-width: 40px; justify-content: center; }
+  .pill { min-height: 36px; padding: 6px 14px; }
+  .card-action-btn { min-height: 40px; padding: 6px 14px; }
+  .table-toggle-btn { min-height: 36px; }
+  .dlg-close-btn { width: 44px; height: 44px; }
+  .today-tag-btn { min-width: 52px; min-height: 44px; }
+  .step-item { min-height: 64px; }
+  .btn { min-height: 44px; }
+  .search-input { min-height: 44px; }
+}
+/* iOS Safari hace zoom al enfocar campos < 16px */
+@media (max-width: 640px) {
+  input[type="text"], input[type="number"], input[type="date"], input[type="url"],
+  input[type="search"], input:not([type]), select, textarea, .search-input {
+    font-size: 16px;
+  }
+}
+/* Header compacto al hacer scroll: libera pantalla en móvil */
+header.compact .filter-pills,
+header.compact .header-main-row { display: none; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 4px; }

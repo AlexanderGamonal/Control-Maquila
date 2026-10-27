@@ -27,14 +27,77 @@ Aplicación Web Progresiva (PWA) moderna, responsiva y offline-first diseñada p
 ## 🚀 Estructura del Proyecto
 
 ```text
-├── index.html        # Aplicación web completa (HTML5 + CSS3 Vanilla + JS)
-├── Code.gs           # Backend para Google Apps Script (Web App)
+├── index.html        # Marcado HTML (sin CSS ni JS en línea) + hojas de estilo y punto de entrada
+├── css/              # Estilos por sección; el ORDEN de los <link> en index.html es el de la cascada
+├── js/               # Módulos ES (ver "Arquitectura")
+├── Code.gs           # Backend para Google Apps Script (se pega en la hoja; no se publica con la app)
 ├── manifest.json     # Manifiesto de instalación PWA (íconos PNG, maskable, acceso directo)
-├── sw.js             # Service Worker: red primero para el HTML, caché para el resto
+├── sw.js             # Service Worker: red primero para el código, caché para el resto
 ├── icons/            # Íconos PWA (192, 512, maskable 512, apple-touch-icon)
 ├── fonts/            # Inter (latin, variable) alojada localmente + licencia OFL
-├── .gitignore        # Configuración de exclusiones git
+├── tools/stamp.js    # Sella los CSS con un hash de su contenido (ver "Desarrollo")
+├── tests/            # unit/ (Node) · e2e/ (Playwright) · visual/ (comparación de diseño) · helpers/
+├── package.json      # Scripts de desarrollo (no hay paso de compilación)
 └── README.md         # Documentación del proyecto
+```
+
+---
+
+## 🧩 Arquitectura
+
+Sin compilador ni dependencias en producción: son módulos ES nativos del navegador.
+
+```text
+config.js   constantes (claves de almacenamiento, etapas, campos fusionables)
+utils.js    ayudas puras: fechas, escape de HTML, almacenamiento tolerante a fallos
+model.js    modelo y reglas de negocio PURAS (norm, mergeRec, setFields, estado…) ← se prueba en Node
+state.js    estado compartido de la app + persist()
+status.js   barra de estado de sincronización
+render.js   pintado de tarjetas / tabla / KPIs / estado vacío
+toast.js    avisos con «Deshacer»
+actions.js  touch() y undoField(): modifican, guardan, pintan y programan la sincronización
+sync.js     sincronización con Google Sheets (fusión que nunca descarta datos locales)
+form.js     formulario de pedido (bottom sheet en móvil)
+config-dialog.js  diálogo de URL + token de la hoja
+list-events.js    eventos de la lista: marcar etapas y abrir el formulario
+controls.js       vista tarjetas/tabla, filtros, búsqueda y header compacto
+theme.js    tema claro/oscuro
+app.js      punto de entrada: registra eventos y arranca en el mismo orden de siempre
+```
+
+Dependencias (sin ciclos): `config → utils → model → state → render → sync → actions → form / list-events`.
+`model.js` y `utils.js` no tocan el DOM al importarse, por eso las pruebas unitarias corren en Node sin navegador.
+
+---
+
+## 🛠️ Desarrollo
+
+**Abrir la app en local:** los módulos ES no cargan con doble clic (`file://`); usa un servidor estático:
+
+```bash
+npm run serve            # = python3 -m http.server 8000  →  http://localhost:8000
+```
+
+**Después de editar un archivo de `css/`:** ejecuta `npm run stamp`. Chromium sirve las hojas de estilo desde su caché en memoria al recargar una pestaña abierta, sin consultar al service worker; `stamp` añade a cada `<link>` un `?v=<hash del contenido>` para que la URL cambie cuando cambia el estilo. Si lo olvidas, `npm run test:unit` falla y te lo recuerda.
+
+**Archivos nuevos en `css/` o `js/`:** agrégalos a `PRECACHE` en `sw.js` (y, si es un módulo, un `<link rel="modulepreload">` en `index.html`); una prueba lo comprueba.
+
+**Pruebas**
+
+| Comando | Qué cubre | Requiere |
+|---|---|---|
+| `npm run test:unit` | Modelo, fusión por campo, paridad cliente↔`Code.gs`, migración de hojas, `onEdit`, integridad del proyecto | Solo Node ≥ 20 |
+| `npm run test:e2e` | Formulario, avisos con Deshacer, sincronización, dos vendedores a la vez, service worker/offline, accesibilidad, diseño | `npm i` y `npx playwright install chromium` |
+| `npm test` | Todo lo anterior | ambos |
+
+Variables útiles para las pruebas de navegador: `CHROMIUM_PATH` (usar un Chromium ya instalado) y `PLAYWRIGHT_PATH`. Se puede filtrar: `node tests/e2e/run.cjs form sync`.
+
+**Comparar el diseño antes/después de un cambio** (`tests/visual/`): captura la app en 65 estados y los estilos calculados de **cada elemento**, y compara dos versiones. La línea base se genera con la versión de referencia (no se versiona: son cientos de MB):
+
+```bash
+git stash && node tests/visual/capture.cjs http://localhost:8000/index.html /tmp/antes && git stash pop
+node tests/visual/capture.cjs http://localhost:8000/index.html /tmp/despues
+node tests/visual/compare.cjs /tmp/antes /tmp/despues       # "RESULTADO: IDÉNTICO" o la lista de diferencias
 ```
 
 ---
@@ -84,8 +147,9 @@ Cada campo de un pedido (marca, cantidad, peso, fórmula, fechas, etapas, estado
 
 ## 📲 PWA y despliegue
 
-- **Actualizaciones:** el HTML se pide primero a la red (con revalidación), así que cada despliegue se ve en la **primera** carga con conexión. Sin conexión, o si la red tarda más de 4 s, se usa la última copia guardada y la descarga termina en segundo plano para la siguiente carga.
-- **Cuándo subir `VERSION` en `sw.js`:** solo si cambias la lista `PRECACHE` (nuevos archivos, íconos o fuentes). Los cambios en `index.html` no lo requieren.
+- **Actualizaciones:** el HTML, los módulos (`js/`) y los estilos (`css/`) se piden primero a la red (con revalidación), así que cada despliegue se ve en la **primera** carga con conexión y todo es de la misma versión. Sin conexión, o si la red tarda más de 4 s, se usa la última copia guardada y la descarga termina en segundo plano para la siguiente carga.
+- **Cuándo subir `VERSION` en `sw.js`:** solo si cambias la lista `PRECACHE` (nuevos archivos, íconos o fuentes). Los cambios dentro de archivos ya listados no lo requieren.
+- **Publicar:** basta con subir la carpeta a cualquier hosting estático (GitHub Pages, Netlify…). `Code.gs` y `tests/` no se usan en producción.
 - **Migración desde la versión anterior:** el service worker viejo era caché-primero, así que la primera recarga tras actualizar aún puede mostrar la versión previa; desde la segunda ya funciona el esquema nuevo.
 - **Fuente:** Inter está en `fonts/` (no se pide nada a Google Fonts), por lo que la tipografía también funciona sin conexión.
 - **Instalación:** en Android/Chrome aparece «Instalar app». En iPhone: Compartir ➔ «Añadir a pantalla de inicio». La app instalada incluye el acceso directo «Nuevo pedido».
